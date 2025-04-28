@@ -72,22 +72,12 @@ export default function NotionEditor({
       const blockIndex = prevBlocks.findIndex((b) => b.id === blockId);
       if (blockIndex === -1) return prevBlocks;
 
-      // Create a new block with proper content for its type
-      let defaultContent = "";
-      
-      // For list types, add prefix markers
-      if (blockType === "bulletList") {
-        defaultContent = "• "; 
-      } else if (blockType === "numberedList") {
-        defaultContent = "1. ";
-      } else if (blockType === "dashedList") {
-        defaultContent = "- ";
-      }
-      
+      // All blocks start with empty content
+      // The list styles are handled via CSS now
       const newBlock: Block = {
         id: newBlockId,
         type: blockType,
-        content: defaultContent,
+        content: "",
       };
 
       return [

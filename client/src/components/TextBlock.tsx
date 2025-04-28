@@ -191,29 +191,23 @@ export default function TextBlock({
 
   // Apply formatting to block
   const handleFormatSelect = (type: Block["type"]) => {
+    // Update the block type first
     updateBlock(block.id, { type });
     setShowFormatMenu(false);
     
-    // Add list markers for list types
+    // Handle content formatting for the editor
     if (editor) {
-      const content = editor.getText();
+      // Strip any existing formatting characters from the beginning
+      let content = editor.getText() || '';
       
-      if (type === 'bulletList') {
-        // Add bullet prefix if not already there
-        if (!content.startsWith('•')) {
-          editor.commands.setContent(`• ${content}`);
-        }
-      } else if (type === 'numberedList') {
-        // Add number prefix if not already there
-        if (!content.match(/^\d+\.\s/)) {
-          editor.commands.setContent(`1. ${content}`);
-        }
-      } else if (type === 'dashedList') {
-        // Add dash prefix if not already there
-        if (!content.startsWith('-')) {
-          editor.commands.setContent(`- ${content}`);
-        }
-      }
+      // Remove any bullet/number/dash prefixes from the text
+      content = content.replace(/^[•\-\d]+\.?\s+/, '');
+      
+      // For list types, we leave the content clean and rely on CSS for the visual markers
+      // This ensures changing between formats doesn't stack prefixes
+      
+      // Set the clean content and focus
+      editor.commands.setContent(content);
       
       // Focus back on the editor after changing format
       setTimeout(() => {

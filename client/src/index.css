@@ -57,22 +57,40 @@
   }
 }
 
-/* List styles for the editor */
-.editor-content ul {
-  @apply list-disc pl-5;
+/* Styling for list-type blocks */
+.bulletList .ProseMirror {
+  position: relative;
 }
 
-.editor-content ol {
-  @apply list-decimal pl-5;
+.bulletList .ProseMirror::before {
+  content: "•";
+  position: absolute;
+  left: -16px;
+  top: 0px;
+  color: #666;
 }
 
-/* Style for dashed lists */
-.editor-content p:has(+ .dashedList) {
-  @apply relative pl-5;
+.numberedList .ProseMirror {
+  position: relative;
 }
 
-/* Style for list items */
-.editor-content li {
-  @apply py-0.5;
+.numberedList .ProseMirror::before {
+  content: "1.";
+  position: absolute;
+  left: -20px;
+  top: 0px;
+  color: #666;
+}
+
+.dashedList .ProseMirror {
+  position: relative;
+}
+
+.dashedList .ProseMirror::before {
+  content: "-";
+  position: absolute;
+  left: -14px;
+  top: 0px;
+  color: #666;
 }
 
