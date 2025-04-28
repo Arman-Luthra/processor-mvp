@@ -101,6 +101,9 @@ export default function TextBlock({
     }
   }, [shouldFocus, editor]);
   
+  // Ensure we only process Enter key once
+  const isAddingBlock = useRef(false);
+  
   // Handle custom editor-enter-key event from TipTap extension
   useEffect(() => {
     if (!editor) return;
@@ -111,6 +114,9 @@ export default function TextBlock({
     editorElement.id = editorId;
     
     const handleEditorEnterKey = (event: CustomEvent) => {
+      // Prevent duplicate block creation
+      if (isAddingBlock.current) return;
+      
       const { editorId: eventEditorId, isEmpty } = event.detail;
       
       // Only handle if this is the active editor (the one that fired the event)
@@ -123,21 +129,25 @@ export default function TextBlock({
         // Don't create a new block for code blocks
         if (block.type === "code") return;
         
+        // Set flag to prevent multiple block creation
+        isAddingBlock.current = true;
+        
         // Create a new block after this one
         addBlockAfter(block.id);
+        
+        // Reset flag after a delay
+        setTimeout(() => {
+          isAddingBlock.current = false;
+        }, 100);
       }
     };
     
-    // Add event listeners - listen both on the window and directly on the editor element
+    // Add event listener only on the window (to prevent duplicate triggers)
     window.addEventListener('editor-enter-key', handleEditorEnterKey as EventListener);
-    editorElement.addEventListener('editor-enter-key', handleEditorEnterKey as EventListener);
     
     // Clean up
     return () => {
       window.removeEventListener('editor-enter-key', handleEditorEnterKey as EventListener);
-      if (editorElement) {
-        editorElement.removeEventListener('editor-enter-key', handleEditorEnterKey as EventListener);
-      }
     };
   }, [editor, block.id, block.type, addBlockAfter]);
 
@@ -145,21 +155,14 @@ export default function TextBlock({
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (!editor) return;
 
-    // Enter key creates a new block
+    // Enter key creates a new block - but we'll let the extension handle this
+    // to avoid duplicate blocks being created
     if (event.key === "Enter" && !event.shiftKey) {
-      // Handle in editor extensions
-      if (block.type === "code") {
-        // Let code blocks handle Enter normally
-        return;
-      }
+      // Let code blocks handle Enter normally
+      if (block.type === "code") return;
       
-      // Force create a new block
-      event.preventDefault();
-      event.stopPropagation();
-      
-      if (!editor.isEmpty) {
-        addBlockAfter(block.id);
-      }
+      // Don't do anything here - let the extension handle it
+      // This prevents multiple handler conflicts
     }
     
     // Backspace key on empty block deletes the block
@@ -175,32 +178,9 @@ export default function TextBlock({
     }
   };
   
-  // Listen for editor events directly
-  useEffect(() => {
-    if (!editor) return;
-    
-    // Override Enter key behavior to create new blocks
-    const handleEnterKey = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' && !event.shiftKey && editor.isFocused) {
-        // Let code blocks handle Enter normally
-        if (block.type === "code") return;
-      
-        event.preventDefault();
-        
-        if (!editor.isEmpty) {
-          addBlockAfter(block.id);
-        }
-      }
-    };
-    
-    // Add direct event listener to the editor DOM element
-    const editorElement = editor.view.dom;
-    editorElement.addEventListener('keydown', handleEnterKey);
-    
-    return () => {
-      editorElement.removeEventListener('keydown', handleEnterKey);
-    };
-  }, [editor, block.id, block.type, addBlockAfter]);
+  // We're now handling the Enter key through editor-enter-key event
+  // and the handleKeyDown function, so this additional handler is not needed
+  // and was likely causing multiple blocks to be created
 
   // Toggle format menu
   const toggleFormatMenu = () => {

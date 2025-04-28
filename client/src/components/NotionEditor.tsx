@@ -107,26 +107,57 @@ export default function NotionEditor({
     );
   };
 
+  // Handle focusing blocks
+  const focusBlockById = useCallback((blockId: string) => {
+    // Add a brief timeout to ensure DOM has been updated
+    setTimeout(() => {
+      const element = blockRefs.current.get(blockId);
+      if (element) {
+        // Find the editor and focus it
+        const editorElement = element.querySelector('.ProseMirror');
+        if (editorElement) {
+          (editorElement as HTMLElement).focus();
+          
+          // Set cursor at the start of the editor
+          if (editorElement.firstChild) {
+            const selection = window.getSelection();
+            if (selection) {
+              const range = document.createRange();
+              // Position at start of text
+              range.setStart(editorElement.firstChild, 0);
+              range.collapse(true);
+              selection.removeAllRanges();
+              selection.addRange(range);
+            }
+          }
+        }
+      }
+      
+      // Reset tracking
+      setLastCreatedBlockId(null);
+    }, 10);
+  }, []);
+  
   // Focus the newly created block
   useEffect(() => {
     if (lastCreatedBlockId) {
-      // Short delay to ensure the DOM has updated
-      const timeoutId = setTimeout(() => {
-        const element = blockRefs.current.get(lastCreatedBlockId);
-        if (element) {
-          // Find the editor element and focus it
-          const editor = element.querySelector('.ProseMirror');
-          if (editor) {
-            (editor as HTMLElement).focus();
-          }
-        }
-        // Reset the last created block ID
-        setLastCreatedBlockId(null);
-      }, 10);
-      
-      return () => clearTimeout(timeoutId);
+      focusBlockById(lastCreatedBlockId);
     }
-  }, [lastCreatedBlockId, blocks]);
+  }, [lastCreatedBlockId, focusBlockById]);
+  
+  // Listen for focus-first-block event (from title)
+  useEffect(() => {
+    const handleFocusFirstBlock = () => {
+      if (blocks.length > 0) {
+        focusBlockById(blocks[0].id);
+      }
+    };
+    
+    window.addEventListener('focus-first-block', handleFocusFirstBlock);
+    return () => {
+      window.removeEventListener('focus-first-block', handleFocusFirstBlock);
+    };
+  }, [blocks, focusBlockById]);
 
   return (
     <div className="min-h-screen flex justify-center">

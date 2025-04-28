@@ -53,24 +53,13 @@ export default function DocumentTitle({ title, onChange }: DocumentTitleProps) {
     if (e.key === "Enter") {
       e.preventDefault();
       
-      // Find the first editor content and focus its ProseMirror node
-      const firstEditorContent = document.querySelector('.ProseMirror');
-      if (firstEditorContent) {
-        // Focus the editor content
-        (firstEditorContent as HTMLElement).focus();
-        
-        // Set cursor at the beginning
-        const selection = window.getSelection();
-        if (selection) {
-          const range = document.createRange();
-          range.setStart(firstEditorContent, 0);
-          range.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(range);
-        }
-      } else {
-        titleRef.current?.blur();
-      }
+      // Dispatch a custom event to tell NotionEditor to focus the first block
+      const event = new CustomEvent('focus-first-block', {
+        detail: { fromTitle: true }
+      });
+      
+      // This allows NotionEditor to handle the focusing since it knows the blocks
+      window.dispatchEvent(event);
     }
   };
 
