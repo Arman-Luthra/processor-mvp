@@ -6,21 +6,16 @@ import {
   Type, Code, FileText 
 } from "lucide-react";
 
-// Update the Block type interface to include list types
-type BlockType = Block["type"] | "bulletList" | "numberedList" | "dashedList";
-
 interface FormatDropdownProps {
   onSelect: (type: Block["type"]) => void;
   onClose: () => void;
   buttonRef: React.RefObject<HTMLButtonElement>;
-  position?: { top: number, left: number }; // Optional position prop
 }
 
 export default function FormatDropdown({
   onSelect,
   onClose,
   buttonRef,
-  position: parentPosition, // Renamed to avoid conflict with local state
 }: FormatDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -38,24 +33,19 @@ export default function FormatDropdown({
     { type: "code", name: "Code", icon: <Code size={16} /> },
   ];
 
-  // Use position from parent if provided, otherwise calculate it
+  // Position the dropdown when the menu opens
   useEffect(() => {
-    if (parentPosition) {
-      // Use position passed from parent (already calculated)
-      setPosition(parentPosition);
-    } else {
-      // Calculate position ourselves (fallback)
-      if (buttonRef.current) {
-        const rect = buttonRef.current.getBoundingClientRect();
-        const dropdownWidth = 160;
-        
-        setPosition({
-          top: rect.top,
-          left: Math.max(10, rect.left - dropdownWidth - 5),
-        });
-      }
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const dropdownWidth = 160;
+      
+      // Position to the left of the content with some padding
+      setPosition({
+        top: rect.top,
+        left: rect.left - dropdownWidth - 5,
+      });
     }
-  }, [parentPosition]);
+  }, [buttonRef]);
 
   // Handle clicks outside the dropdown
   useEffect(() => {
@@ -79,14 +69,11 @@ export default function FormatDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="fixed z-10 bg-white shadow-md rounded-md w-40 overflow-hidden border border-[#E0DFDC] opacity-0 transition-opacity duration-75"
+      className="fixed z-10 bg-white shadow-md rounded-md w-40 overflow-hidden border border-[#E0DFDC]"
       style={{ 
         top: position.top, 
         left: position.left,
-        // Only show when we have a valid position
-        opacity: position.top > 0 ? 1 : 0,
-        // Add transform to position correctly
-        transform: `translate3d(0, 0, 0)`,
+        visibility: position.top > 0 ? 'visible' : 'hidden'
       }}
     >
       <div className="format-options py-0.5">

@@ -129,8 +129,12 @@ export default function TextBlock({
         // Set flag to prevent multiple block creation
         isAddingBlock.current = true;
         
-        // Create a new block after this one
-        addBlockAfter(block.id);
+        // Create a new block after this one with same type for lists
+        const newBlockType = ["bulletList", "numberedList", "dashedList"].includes(block.type) 
+          ? block.type 
+          : "paragraph";
+        
+        addBlockAfter(block.id, newBlockType);
         
         // Reset flag after a delay
         setTimeout(() => {
@@ -158,16 +162,7 @@ export default function TextBlock({
       // Let code blocks handle Enter normally
       if (block.type === "code") return;
       
-      // Special handling for list formats to preserve the list format for the new block
-      if (["bulletList", "numberedList", "dashedList"].includes(block.type)) {
-        event.preventDefault();
-        
-        // Create new block after this one with the same type
-        addBlockAfter(block.id, block.type);
-        return;
-      }
-      
-      // Don't do anything here for other types - let the extension handle it
+      // Don't do anything here - let the extension handle it
       // This prevents multiple handler conflicts
     }
     
@@ -188,67 +183,42 @@ export default function TextBlock({
       setShowFormatMenu(true);
     }
   };
-  
-  // We're now handling the Enter key through editor-enter-key event
-  // and the handleKeyDown function, so this additional handler is not needed
-  // and was likely causing multiple blocks to be created
 
-  // State for format menu position
-  const [formatMenuPosition, setFormatMenuPosition] = useState({ top: 0, left: 0 });
-  
-  // Toggle format menu with pre-positioning
+  // Toggle format menu
   const toggleFormatMenu = () => {
-    if (!showFormatMenu && formatMenuButtonRef.current) {
-      // Get position before showing menu
-      const rect = formatMenuButtonRef.current.getBoundingClientRect();
-      const dropdownWidth = 160;
-      
-      // Set position before showing menu
-      setFormatMenuPosition({
-        top: rect.top,
-        left: Math.max(10, rect.left - dropdownWidth - 5)
-      });
-      
-      // Then show the menu
-      setShowFormatMenu(true);
-    } else {
-      setShowFormatMenu(false);
-    }
+    setShowFormatMenu(!showFormatMenu);
   };
 
   // Apply formatting to block
   const handleFormatSelect = (type: Block["type"]) => {
-    // Update block type
     updateBlock(block.id, { type });
     setShowFormatMenu(false);
     
-    // Handle editor content formatting if editor exists
+    // Add list markers for list types
     if (editor) {
-      // Get existing content as plain text (ignoring any HTML)
-      const plainText = editor.getText() || 'List item';
+      const content = editor.getText();
       
-      // First clear the content completely to remove any existing formats
-      editor.commands.clearContent();
-      
-      // Now add new content with proper formatting based on type
-      if (type === "bulletList") {
-        // Bullet list format (• item)
-        editor.commands.setContent(`<ul><li>${plainText}</li></ul>`);
-      } else if (type === "numberedList") {
-        // Numbered list format (1. item)
-        editor.commands.setContent(`<ol><li>${plainText}</li></ol>`);
-      } else if (type === "dashedList") {
-        // Dashed list format (- item)
-        editor.commands.setContent(`<p>- ${plainText}</p>`);
-      } else {
-        // For non-list formats, just set the plain text
-        editor.commands.setContent(`<p>${plainText}</p>`);
+      if (type === 'bulletList') {
+        // Add bullet prefix if not already there
+        if (!content.startsWith('•')) {
+          editor.commands.setContent(`• ${content}`);
+        }
+      } else if (type === 'numberedList') {
+        // Add number prefix if not already there
+        if (!content.match(/^\d+\.\s/)) {
+          editor.commands.setContent(`1. ${content}`);
+        }
+      } else if (type === 'dashedList') {
+        // Add dash prefix if not already there
+        if (!content.startsWith('-')) {
+          editor.commands.setContent(`- ${content}`);
+        }
       }
       
-      // Focus back and position cursor at the end
+      // Focus back on the editor after changing format
       setTimeout(() => {
         editor.commands.focus('end');
-      }, 10);
+      }, 0);
     }
   };
 
@@ -268,11 +238,11 @@ export default function TextBlock({
       case "markdown":
         return "font-mono text-base";
       case "bulletList":
-        return "text-base list-disc pl-5";
+        return "text-base pl-5";
       case "numberedList":
-        return "text-base list-decimal pl-5";
+        return "text-base pl-5";
       case "dashedList":
-        return "text-base pl-5 before:content-['-'] before:mr-2";
+        return "text-base pl-5";
       case "paragraph":
       default:
         return "text-base";
@@ -308,7 +278,6 @@ export default function TextBlock({
           onSelect={handleFormatSelect}
           onClose={() => setShowFormatMenu(false)}
           buttonRef={formatMenuButtonRef}
-          position={formatMenuPosition}
         />
       )}
 

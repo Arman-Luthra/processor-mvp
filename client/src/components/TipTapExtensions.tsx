@@ -6,6 +6,7 @@ import Superscript from "@tiptap/extension-superscript";
 import Subscript from "@tiptap/extension-subscript";
 import CodeBlock from "@tiptap/extension-code-block";
 import { Extension } from "@tiptap/core";
+import { Node } from "@tiptap/core";
 
 // Custom extension to handle placeholder visibility properly
 const CustomPlaceholder = Placeholder.configure({
@@ -28,31 +29,69 @@ const KeyboardHandler = Extension.create({
       'Mod-`': () => this.editor.commands.toggleCode(),
       'Mod-Shift-.': () => this.editor.commands.toggleSuperscript(),
       'Mod-Shift-,': () => this.editor.commands.toggleSubscript(),
-      
-      // Disable TipTap's built-in Enter behavior
+
+      // Handle Enter key
       Enter: () => {
         // Let TipTap handle Enter inside code blocks
         if (this.editor.isActive('codeBlock')) {
           return false;
         }
-        
-        // Always create a new block on Enter, even if the current one is empty
-        // This matches Notion behavior
+
+        // Create a new block on Enter (even if empty)
         const event = new CustomEvent('editor-enter-key', {
           detail: {
             editorId: this.editor.options.element.id,
             isEmpty: this.editor.isEmpty
           }
         });
-        
-        // Dispatch on the editor element and window for wider compatibility
-        this.editor.options.element.dispatchEvent(event);
+
         window.dispatchEvent(event);
-        
+
         // Prevent TipTap's default Enter behavior
         return true;
       },
     };
+  },
+});
+
+// Extension to preserve HTML during paste operations
+const PreserveHtmlOnPaste = Extension.create({
+  name: 'preserveHtmlOnPaste',
+
+  addPasteRules() {
+    return [
+      {
+        type: 'text',
+        regex: /./g, // Match any text
+        handler: ({ match, range, chain }) => {
+          // Just let the default paste handler work
+          return false;
+        },
+      },
+    ];
+  },
+});
+
+// Create a custom extension that will preserves HTML content
+const RawHtmlSupport = Node.create({
+  name: 'rawHtml',
+
+  group: 'block',
+
+  content: 'inline*',
+
+  parseHTML() {
+    return [
+      { tag: 'div' },
+      { tag: 'p' },
+      { tag: 'ul' },
+      { tag: 'ol' },
+      { tag: 'li' },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ['div', HTMLAttributes, 0];
   },
 });
 
@@ -63,6 +102,9 @@ export const TipTapExtensions = [
       levels: [1, 2, 3],
     },
     codeBlock: false, // We'll use a custom configured version
+    bulletList: false, // We're handling bullet lists ourselves with CSS
+    orderedList: false, // We're handling ordered lists ourselves with CSS
+    listItem: false, // We're handling list items ourselves
   }),
   Underline,
   Link.configure({
@@ -80,4 +122,6 @@ export const TipTapExtensions = [
   }),
   CustomPlaceholder,
   KeyboardHandler,
+  PreserveHtmlOnPaste,
+  // We're not using RawHtmlSupport since we're handling HTML with wrapper components
 ];
