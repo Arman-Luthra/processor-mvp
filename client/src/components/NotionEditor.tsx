@@ -151,6 +151,9 @@ export default function NotionEditor({
     }
   }, [lastCreatedBlockId, focusBlockById]);
   
+  // Reference to the title input (using HTMLDivElement since our title is a contentEditable div)
+  const titleRef = useRef<HTMLDivElement>(null);
+
   // Listen for focus-first-block event (from title)
   useEffect(() => {
     const handleFocusFirstBlock = () => {
@@ -179,12 +182,26 @@ export default function NotionEditor({
       }, 10);
     };
     
+    // Handle backspace on first block to focus title
+    const handleFocusTitle = () => {
+      // Focus the title input and place cursor at end
+      if (titleRef.current) {
+        titleRef.current.focus();
+        
+        // Move cursor to end of title text
+        const length = titleRef.current.value.length;
+        titleRef.current.setSelectionRange(length, length);
+      }
+    };
+    
     window.addEventListener('focus-first-block', handleFocusFirstBlock);
     window.addEventListener('block-delete-backward', handleBlockDeleteBackward as EventListener);
+    window.addEventListener('focus-title', handleFocusTitle);
     
     return () => {
       window.removeEventListener('focus-first-block', handleFocusFirstBlock);
       window.removeEventListener('block-delete-backward', handleBlockDeleteBackward as EventListener);
+      window.removeEventListener('focus-title', handleFocusTitle);
     };
   }, [blocks, focusBlockById, deleteBlock]);
 
@@ -193,7 +210,11 @@ export default function NotionEditor({
       <div className="w-full max-w-[740px] px-4 py-10 md:py-20">
         {/* Document title */}
         <div className="mb-10 pl-16"> {/* Added left padding for format menu */}
-          <DocumentTitle title={title} onChange={handleTitleChange} />
+          <DocumentTitle 
+            title={title} 
+            onChange={handleTitleChange} 
+            inputRef={titleRef as React.RefObject<HTMLDivElement>} 
+          />
         </div>
 
         {/* Text blocks */}

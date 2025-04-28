@@ -197,20 +197,13 @@ export default function TextBlock({
 
   // Apply formatting to block
   const handleFormatSelect = (type: Block["type"]) => {
-    // First clear all existing formats
+    // First clear all existing formats by returning to a plain paragraph
     const clearAllFormats = () => {
-      if (editor?.isActive('bulletList')) {
-        editor.chain().focus().toggleBulletList().run();
-      }
-      if (editor?.isActive('orderedList')) {
-        editor.chain().focus().toggleOrderedList().run();
-      }
-      if (editor?.isActive('codeBlock')) {
-        editor.chain().focus().toggleCodeBlock().run();
-      }
-      if (editor?.isActive('heading')) {
-        editor.chain().focus().setParagraph().run();
-      }
+      // Use TipTap's built-in lift functionality to clear everything at once
+      editor?.chain().focus().clearNodes().unsetAllMarks().run();
+      
+      // Ensure we're starting fresh with a paragraph
+      editor?.chain().focus().setParagraph().run();
     };
 
     // Update block type in the state

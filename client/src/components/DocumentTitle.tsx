@@ -1,14 +1,18 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef } from "react";
 
 interface DocumentTitleProps {
   title: string;
   onChange: (title: string) => void;
+  inputRef?: React.RefObject<HTMLDivElement>;
 }
 
-export default function DocumentTitle({ title, onChange }: DocumentTitleProps) {
+export default function DocumentTitle({ title, onChange, inputRef }: DocumentTitleProps) {
   // Only store the placeholder state
   const [isPlaceholder, setIsPlaceholder] = useState(title === "Untitled" || !title);
-  const titleRef = useRef<HTMLDivElement>(null);
+  const internalTitleRef = useRef<HTMLDivElement>(null);
+  
+  // Use either the externally provided ref or our internal one
+  const titleRef = inputRef || internalTitleRef;
   
   // We'll avoid using state for the title, as this can cause cursor jumping
   // Instead we'll directly update the DOM when needed
