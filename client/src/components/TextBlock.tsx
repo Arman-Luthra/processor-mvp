@@ -117,15 +117,12 @@ export default function TextBlock({
       // Prevent duplicate block creation
       if (isAddingBlock.current) return;
       
-      const { editorId: eventEditorId, isEmpty } = event.detail;
+      const { editorId: eventEditorId } = event.detail;
       
       // Only handle if this is the active editor (the one that fired the event)
       const isThisEditor = editorId === eventEditorId || editor.isFocused;
       
       if (isThisEditor) {
-        // Don't create a new block for empty blocks
-        if (isEmpty) return;
-        
         // Don't create a new block for code blocks
         if (block.type === "code") return;
         
@@ -165,10 +162,15 @@ export default function TextBlock({
       // This prevents multiple handler conflicts
     }
     
-    // Backspace key on empty block deletes the block
+    // Backspace key on empty block deletes the block and moves cursor to previous block
     if (event.key === "Backspace" && editor.isEmpty) {
       event.preventDefault();
-      deleteBlock(block.id);
+      
+      // Signal to NotionEditor to delete this block and focus the previous one
+      const deleteEvent = new CustomEvent('block-delete-backward', {
+        detail: { blockId: block.id }
+      });
+      window.dispatchEvent(deleteEvent);
     }
     
     // '/' key for commands
@@ -215,6 +217,12 @@ export default function TextBlock({
         return "font-mono p-3 bg-[#F7F6F3] rounded-md text-sm";
       case "markdown":
         return "font-mono text-base";
+      case "bulletList":
+        return "text-base list-disc pl-5";
+      case "numberedList":
+        return "text-base list-decimal pl-5";
+      case "dashedList":
+        return "text-base pl-5 before:content-['-'] before:mr-2";
       case "paragraph":
       default:
         return "text-base";

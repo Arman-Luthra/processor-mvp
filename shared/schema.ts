@@ -52,7 +52,11 @@ export const blockSchema = z.object({
     "heading3", 
     "title", 
     "code", 
-    "markdown"
+    "markdown",
+    // New list types
+    "bulletList",
+    "numberedList",
+    "dashedList"
   ]),
   content: z.string(),
 });

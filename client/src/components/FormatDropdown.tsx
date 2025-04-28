@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Block } from "@shared/schema";
-import { FileText, Heading1, Heading2, Heading3, Type, Code, Bookmark } from "lucide-react";
+import { 
+  Heading1, Heading2, Heading3, 
+  ListOrdered, List, Minus, 
+  Type, Code, FileText 
+} from "lucide-react";
 
-interface FormatOption {
-  type: Block["type"];
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-}
+// Update the Block type interface to include list types
+type BlockType = Block["type"] | "bulletList" | "numberedList" | "dashedList";
 
 interface FormatDropdownProps {
   onSelect: (type: Block["type"]) => void;
@@ -23,76 +23,30 @@ export default function FormatDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
-  // Format options with icons
-  const formatOptions: FormatOption[] = [
-    {
-      type: "title",
-      title: "Title",
-      description: "Large heading",
-      icon: <Type size={18} />,
-    },
-    {
-      type: "heading1",
-      title: "Heading 1",
-      description: "Section heading",
-      icon: <Heading1 size={18} />,
-    },
-    {
-      type: "heading2",
-      title: "Heading 2",
-      description: "Subsection heading",
-      icon: <Heading2 size={18} />,
-    },
-    {
-      type: "heading3",
-      title: "Heading 3",
-      description: "Smaller heading",
-      icon: <Heading3 size={18} />,
-    },
-    {
-      type: "paragraph",
-      title: "Paragraph",
-      description: "Normal text",
-      icon: <FileText size={18} />,
-    },
-    {
-      type: "markdown",
-      title: "Markdown",
-      description: "Formatted text",
-      icon: <Bookmark size={18} />,
-    },
-    {
-      type: "code",
-      title: "Code",
-      description: "Syntax highlighting",
-      icon: <Code size={18} />,
-    },
+  // Format options - simpler version with just names
+  const formatOptions = [
+    { type: "title", name: "Title", icon: <Type size={16} /> },
+    { type: "heading1", name: "Heading 1", icon: <Heading1 size={16} /> },
+    { type: "heading2", name: "Heading 2", icon: <Heading2 size={16} /> },
+    { type: "heading3", name: "Heading 3", icon: <Heading3 size={16} /> },
+    { type: "paragraph", name: "Text", icon: <FileText size={16} /> },
+    { type: "bulletList", name: "Bullet List", icon: <List size={16} /> },
+    { type: "numberedList", name: "Numbered List", icon: <ListOrdered size={16} /> },
+    { type: "dashedList", name: "Dashed List", icon: <Minus size={16} /> },
+    { type: "code", name: "Code", icon: <Code size={16} /> },
   ];
 
-  // Position the dropdown next to the button
+  // Position the dropdown to the left of the button
   useEffect(() => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      const dropdownWidth = 256; // Width of the dropdown (w-64 = 16rem = 256px)
+      const dropdownWidth = 180; // Width of the dropdown
       
-      // Check if there's enough space to show dropdown to the right
-      const viewportWidth = window.innerWidth;
-      const spaceOnRight = viewportWidth - rect.right;
-      
-      // Position dropdown where it fits best
-      if (spaceOnRight >= dropdownWidth + 10) {
-        // Position to the right of the button with some padding
-        setPosition({
-          top: rect.top,
-          left: rect.right + 10,
-        });
-      } else {
-        // Not enough space on right, position to the left with some offset
-        setPosition({
-          top: rect.top,
-          left: Math.max(10, rect.left - dropdownWidth - 10),
-        });
-      }
+      // Always position to the left of the content
+      setPosition({
+        top: rect.top,
+        left: rect.left - dropdownWidth - 5, // Position to the left with small gap
+      });
     }
   }, [buttonRef]);
 
@@ -118,25 +72,20 @@ export default function FormatDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="fixed z-10 bg-white shadow-md rounded-md w-64 overflow-hidden border border-[#E0DFDC]"
+      className="fixed z-10 bg-white shadow-md rounded-md w-44 overflow-hidden border border-[#E0DFDC]"
       style={{ top: position.top, left: position.left }}
     >
-      <div className="p-2 text-sm text-gray-700 font-medium">FORMATTING</div>
-
       <div className="format-options py-1">
         {formatOptions.map((option) => (
           <div
             key={option.type}
-            className="flex items-center px-3 py-2 hover:bg-[#F7F6F3] cursor-pointer"
-            onClick={() => onSelect(option.type)}
+            className="flex items-center px-3 py-1.5 hover:bg-[#F7F6F3] cursor-pointer text-sm"
+            onClick={() => onSelect(option.type as Block["type"])}
           >
-            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-[#F7F6F3] mr-3">
+            <div className="w-5 h-5 flex items-center justify-center mr-2 text-gray-600">
               {option.icon}
             </div>
-            <div className="flex-1">
-              <div className="font-medium text-gray-800 mb-0.5">{option.title}</div>
-              <div className="text-xs text-gray-500">{option.description}</div>
-            </div>
+            <span className="text-gray-800">{option.name}</span>
           </div>
         ))}
       </div>

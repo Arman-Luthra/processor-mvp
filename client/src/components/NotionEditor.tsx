@@ -153,11 +153,34 @@ export default function NotionEditor({
       }
     };
     
+    // Handle backspace on empty block to move cursor to previous block
+    const handleBlockDeleteBackward = (event: CustomEvent) => {
+      const { blockId } = event.detail;
+      const blockIndex = blocks.findIndex(b => b.id === blockId);
+      
+      // If this is the first block, do nothing
+      if (blockIndex <= 0) return;
+      
+      // Get the previous block
+      const previousBlockId = blocks[blockIndex - 1].id;
+      
+      // Delete the current block
+      deleteBlock(blockId);
+      
+      // Focus the previous block
+      setTimeout(() => {
+        focusBlockById(previousBlockId);
+      }, 10);
+    };
+    
     window.addEventListener('focus-first-block', handleFocusFirstBlock);
+    window.addEventListener('block-delete-backward', handleBlockDeleteBackward as EventListener);
+    
     return () => {
       window.removeEventListener('focus-first-block', handleFocusFirstBlock);
+      window.removeEventListener('block-delete-backward', handleBlockDeleteBackward as EventListener);
     };
-  }, [blocks, focusBlockById]);
+  }, [blocks, focusBlockById, deleteBlock]);
 
   return (
     <div className="min-h-screen flex justify-center">

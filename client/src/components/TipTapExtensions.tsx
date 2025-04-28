@@ -36,7 +36,8 @@ const KeyboardHandler = Extension.create({
           return false;
         }
         
-        // Dispatch a custom event that the TextBlock component will listen for
+        // Always create a new block on Enter, even if the current one is empty
+        // This matches Notion behavior
         const event = new CustomEvent('editor-enter-key', {
           detail: {
             editorId: this.editor.options.element.id,
