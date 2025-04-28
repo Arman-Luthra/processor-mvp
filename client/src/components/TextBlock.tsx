@@ -106,24 +106,23 @@ export default function TextBlock({
     };
   }, [editor, block.id, addBlockAfter]);
 
-  // Handle keyboard shortcuts
+  // Handle keyboard shortcuts directly on the editor container
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (!editor) return;
 
     // Enter key creates a new block
     if (event.key === "Enter" && !event.shiftKey) {
-      if (editor.isEmpty) {
-        // Don't create a new block on empty blocks when pressing Enter
-        return;
-      }
-      
+      // Handle in editor extensions
       if (block.type === "code") {
         // Let code blocks handle Enter normally
         return;
       }
       
-      if (!event.isDefaultPrevented()) {
-        event.preventDefault();
+      // Force create a new block
+      event.preventDefault();
+      event.stopPropagation();
+      
+      if (!editor.isEmpty) {
         addBlockAfter(block.id);
       }
     }
@@ -140,6 +139,33 @@ export default function TextBlock({
       setShowFormatMenu(true);
     }
   };
+  
+  // Listen for editor events directly
+  useEffect(() => {
+    if (!editor) return;
+    
+    // Override Enter key behavior to create new blocks
+    const handleEnterKey = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && !event.shiftKey && editor.isFocused) {
+        // Let code blocks handle Enter normally
+        if (block.type === "code") return;
+      
+        event.preventDefault();
+        
+        if (!editor.isEmpty) {
+          addBlockAfter(block.id);
+        }
+      }
+    };
+    
+    // Add direct event listener to the editor DOM element
+    const editorElement = editor.view.dom;
+    editorElement.addEventListener('keydown', handleEnterKey);
+    
+    return () => {
+      editorElement.removeEventListener('keydown', handleEnterKey);
+    };
+  }, [editor, block.id, block.type, addBlockAfter]);
 
   // Toggle format menu
   const toggleFormatMenu = () => {
@@ -200,7 +226,7 @@ export default function TextBlock({
         data-placeholder="Type '/' for commands"
         onKeyDown={handleKeyDown}
       >
-        <EditorContent editor={editor} />
+        <EditorContent className="editor-content" editor={editor} />
       </div>
 
       {/* Format dropdown menu */}

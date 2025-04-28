@@ -73,10 +73,26 @@ export default function FormatDropdown({
   useEffect(() => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.top,
-        left: rect.left - 270, // Position to the left of the button
-      });
+      const dropdownWidth = 256; // Width of the dropdown (w-64 = 16rem = 256px)
+      
+      // Check if there's enough space to show dropdown to the right
+      const viewportWidth = window.innerWidth;
+      const spaceOnRight = viewportWidth - rect.right;
+      
+      // Position dropdown where it fits best
+      if (spaceOnRight >= dropdownWidth + 10) {
+        // Position to the right of the button with some padding
+        setPosition({
+          top: rect.top,
+          left: rect.right + 10,
+        });
+      } else {
+        // Not enough space on right, position to the left with some offset
+        setPosition({
+          top: rect.top,
+          left: Math.max(10, rect.left - dropdownWidth - 10),
+        });
+      }
     }
   }, [buttonRef]);
 
@@ -105,20 +121,20 @@ export default function FormatDropdown({
       className="fixed z-10 bg-white shadow-md rounded-md w-64 overflow-hidden border border-[#E0DFDC]"
       style={{ top: position.top, left: position.left }}
     >
-      <div className="p-2 text-sm text-secondary font-medium">FORMATTING</div>
+      <div className="p-2 text-sm text-gray-700 font-medium">FORMATTING</div>
 
-      <div className="format-options">
+      <div className="format-options py-1">
         {formatOptions.map((option) => (
           <div
             key={option.type}
             className="flex items-center px-3 py-2 hover:bg-[#F7F6F3] cursor-pointer"
             onClick={() => onSelect(option.type)}
           >
-            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-[#F7F6F3] mr-2">
+            <div className="w-8 h-8 flex items-center justify-center rounded-md bg-[#F7F6F3] mr-3">
               {option.icon}
             </div>
             <div className="flex-1">
-              <div className="font-medium text-gray-800">{option.title}</div>
+              <div className="font-medium text-gray-800 mb-0.5">{option.title}</div>
               <div className="text-xs text-gray-500">{option.description}</div>
             </div>
           </div>

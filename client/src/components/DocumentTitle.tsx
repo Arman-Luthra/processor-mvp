@@ -25,14 +25,19 @@ export default function DocumentTitle({ title, onChange }: DocumentTitleProps) {
         titleRef.current.textContent = "";
       }
       setIsPlaceholder(false);
-    } else if (titleRef.current) {
-      // Select all text when focusing
-      const selection = window.getSelection();
-      const range = document.createRange();
-      range.selectNodeContents(titleRef.current);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
     }
+    
+    // Always select all text when focusing after a small delay
+    // This ensures the browser has time to process the contentEditable focus
+    setTimeout(() => {
+      if (titleRef.current) {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(titleRef.current);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+    }, 10);
   };
 
   // Handle input changes
@@ -47,7 +52,13 @@ export default function DocumentTitle({ title, onChange }: DocumentTitleProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      titleRef.current?.blur();
+      // Move focus to the first content block when pressing Enter in title
+      const firstBlock = document.querySelector('.editor-content');
+      if (firstBlock) {
+        (firstBlock as HTMLElement).focus();
+      } else {
+        titleRef.current?.blur();
+      }
     }
   };
 
@@ -63,7 +74,7 @@ export default function DocumentTitle({ title, onChange }: DocumentTitleProps) {
   return (
     <div
       ref={titleRef}
-      className={`text-[40px] font-bold focus:outline-none ${isPlaceholder ? 'text-gray-400' : 'text-secondary'}`}
+      className={`text-[40px] font-bold focus:outline-none ${isPlaceholder ? 'text-gray-400' : 'text-gray-800'}`}
       contentEditable
       onFocus={handleFocus}
       onBlur={handleBlur}
