@@ -198,7 +198,7 @@ export default function NotionEditor({
 
         {/* Text blocks */}
         <div className="space-y-3 pl-16"> {/* Added left padding for format menu */}
-          {blocks.map((block) => (
+          {blocks.map((block, index) => (
             <TextBlock
               key={block.id}
               block={block}
@@ -207,6 +207,7 @@ export default function NotionEditor({
               deleteBlock={deleteBlock}
               registerBlockRef={registerBlockRef}
               shouldFocus={block.id === lastCreatedBlockId}
+              isFirstBlock={index === 0}
             />
           ))}
           

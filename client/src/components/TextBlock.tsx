@@ -13,6 +13,7 @@ interface TextBlockProps {
   deleteBlock: (blockId: string) => void;
   registerBlockRef?: (blockId: string, element: HTMLElement | null) => void;
   shouldFocus?: boolean;
+  isFirstBlock?: boolean;
 }
 
 export default function TextBlock({
@@ -22,6 +23,7 @@ export default function TextBlock({
   deleteBlock,
   registerBlockRef,
   shouldFocus = false,
+  isFirstBlock = false,
 }: TextBlockProps) {
   const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [showSelectionMenu, setShowSelectionMenu] = useState(false);
@@ -272,10 +274,15 @@ export default function TextBlock({
       {/* Editable content area */}
       <div
         className={`py-1 focus:outline-none ${getBlockClass(block.type)} ${block.type}`}
-        data-placeholder="Type '/' for commands"
         onKeyDown={handleKeyDown}
+        data-block-id={block.id}
       >
-        <EditorContent className="editor-content" editor={editor} />
+        <EditorContent 
+          className="editor-content" 
+          editor={editor}
+          data-placeholder="Type '/' for commands"
+          data-is-first-block={isFirstBlock ? "true" : "false"}
+        />
       </div>
 
       {/* Format dropdown menu */}
