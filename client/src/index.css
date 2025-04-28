@@ -57,3 +57,22 @@
   }
 }
 
+/* List styles for the editor */
+.editor-content ul {
+  @apply list-disc pl-5;
+}
+
+.editor-content ol {
+  @apply list-decimal pl-5;
+}
+
+.editor-content ul.list-none li:before {
+  content: "- ";
+  @apply mr-1;
+}
+
+/* Style for list items */
+.editor-content li {
+  @apply py-0.5;
+}
+

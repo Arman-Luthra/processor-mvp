@@ -184,22 +184,51 @@ export default function TextBlock({
   // and the handleKeyDown function, so this additional handler is not needed
   // and was likely causing multiple blocks to be created
 
-  // Toggle format menu
+  // State for format menu position
+  const [formatMenuPosition, setFormatMenuPosition] = useState({ top: 0, left: 0 });
+  
+  // Toggle format menu with pre-positioning
   const toggleFormatMenu = () => {
-    setShowFormatMenu(!showFormatMenu);
+    if (!showFormatMenu && formatMenuButtonRef.current) {
+      // Get position before showing menu
+      const rect = formatMenuButtonRef.current.getBoundingClientRect();
+      const dropdownWidth = 160;
+      
+      // Set position before showing menu
+      setFormatMenuPosition({
+        top: rect.top,
+        left: Math.max(10, rect.left - dropdownWidth - 5)
+      });
+      
+      // Then show the menu
+      setShowFormatMenu(true);
+    } else {
+      setShowFormatMenu(false);
+    }
   };
 
   // Apply formatting to block
   const handleFormatSelect = (type: Block["type"]) => {
+    // Apply the text formatting
     updateBlock(block.id, { type });
     setShowFormatMenu(false);
+    
+    // Add special list HTML for better styling
+    if (type === "bulletList" && editor) {
+      editor.commands.setContent('<ul class="list-disc"><li>' + editor.getHTML() + '</li></ul>');
+    } else if (type === "numberedList" && editor) {
+      editor.commands.setContent('<ol class="list-decimal"><li>' + editor.getHTML() + '</li></ol>');
+    } else if (type === "dashedList" && editor) {
+      editor.commands.setContent('<ul class="list-none"><li>- ' + editor.getHTML() + '</li></ul>');
+    }
+    
     // Focus back on the editor after changing format
     setTimeout(() => {
       // Use the editor's view to focus instead of directly calling focus
       if (editor && editor.view) {
         editor.view.focus();
       }
-    }, 0);
+    }, 10);
   };
 
   // Helper to get block class based on type
@@ -258,6 +287,7 @@ export default function TextBlock({
           onSelect={handleFormatSelect}
           onClose={() => setShowFormatMenu(false)}
           buttonRef={formatMenuButtonRef}
+          position={formatMenuPosition}
         />
       )}
 

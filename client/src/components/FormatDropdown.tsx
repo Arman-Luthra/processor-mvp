@@ -13,12 +13,14 @@ interface FormatDropdownProps {
   onSelect: (type: Block["type"]) => void;
   onClose: () => void;
   buttonRef: React.RefObject<HTMLButtonElement>;
+  position?: { top: number, left: number }; // Optional position prop
 }
 
 export default function FormatDropdown({
   onSelect,
   onClose,
   buttonRef,
+  position: parentPosition, // Renamed to avoid conflict with local state
 }: FormatDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -36,24 +38,24 @@ export default function FormatDropdown({
     { type: "code", name: "Code", icon: <Code size={16} /> },
   ];
 
-  // Position the dropdown just once after mounting to prevent "phantom" positioning
+  // Use position from parent if provided, otherwise calculate it
   useEffect(() => {
-    // Use a tiny timeout to ensure button ref is properly set
-    const positionTimer = setTimeout(() => {
+    if (parentPosition) {
+      // Use position passed from parent (already calculated)
+      setPosition(parentPosition);
+    } else {
+      // Calculate position ourselves (fallback)
       if (buttonRef.current) {
         const rect = buttonRef.current.getBoundingClientRect();
-        const dropdownWidth = 160; // Width of the dropdown (smaller)
+        const dropdownWidth = 160;
         
-        // Position menu in the left margin area
         setPosition({
           top: rect.top,
           left: Math.max(10, rect.left - dropdownWidth - 5),
         });
       }
-    }, 5);
-    
-    return () => clearTimeout(positionTimer);
-  }, []);
+    }
+  }, [parentPosition]);
 
   // Handle clicks outside the dropdown
   useEffect(() => {
