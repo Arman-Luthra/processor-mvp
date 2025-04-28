@@ -6,46 +6,39 @@ interface DocumentTitleProps {
 }
 
 export default function DocumentTitle({ title, onChange }: DocumentTitleProps) {
-  const [editableTitle, setEditableTitle] = useState(title);
+  // Only store the placeholder state
   const [isPlaceholder, setIsPlaceholder] = useState(title === "Untitled" || !title);
   const titleRef = useRef<HTMLDivElement>(null);
+  
+  // We'll avoid using state for the title, as this can cause cursor jumping
+  // Instead we'll directly update the DOM when needed
 
-  // Update local state when prop changes
+  // Initialize title on mount or when title prop changes
   useEffect(() => {
-    setEditableTitle(title);
+    if (titleRef.current && !titleRef.current.isEqualNode(document.activeElement)) {
+      // Only update the DOM if this element is not currently focused
+      // This prevents cursor jumping while typing
+      titleRef.current.textContent = title || "Untitled";
+    }
+    
+    // Update placeholder state
     setIsPlaceholder(title === "Untitled" || !title);
   }, [title]);
 
   // Handle focus
   const handleFocus = () => {
-    if (isPlaceholder) {
+    if (isPlaceholder && titleRef.current) {
       // Clear the placeholder text on focus
-      setEditableTitle("");
-      if (titleRef.current) {
-        titleRef.current.textContent = "";
-      }
+      titleRef.current.textContent = "";
       setIsPlaceholder(false);
     }
-    
-    // Always select all text when focusing after a small delay
-    // This ensures the browser has time to process the contentEditable focus
-    setTimeout(() => {
-      if (titleRef.current) {
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(titleRef.current);
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-      }
-    }, 10);
   };
 
   // Handle input changes
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
     const newTitle = e.currentTarget.textContent || "";
-    setEditableTitle(newTitle);
-    setIsPlaceholder(false);
-    onChange(newTitle);
+    setIsPlaceholder(newTitle === "");
+    onChange(newTitle || "Untitled");
   };
 
   // Handle keyboard events
@@ -65,13 +58,21 @@ export default function DocumentTitle({ title, onChange }: DocumentTitleProps) {
 
   // Handle blur
   const handleBlur = () => {
-    if (!editableTitle.trim()) {
-      setEditableTitle("Untitled");
+    // If the title is empty, set it to Untitled
+    if (titleRef.current && (!titleRef.current.textContent || !titleRef.current.textContent.trim())) {
+      titleRef.current.textContent = "Untitled";
       setIsPlaceholder(true);
       onChange("Untitled");
     }
   };
 
+  // A different approach for initializing the content which works better with contentEditable
+  useEffect(() => {
+    if (titleRef.current && titleRef.current.textContent === "") {
+      titleRef.current.textContent = title || "Untitled";
+    }
+  }, []);
+  
   return (
     <div
       ref={titleRef}
@@ -82,8 +83,6 @@ export default function DocumentTitle({ title, onChange }: DocumentTitleProps) {
       onInput={handleInput}
       onKeyDown={handleKeyDown}
       suppressContentEditableWarning={true}
-    >
-      {editableTitle}
-    </div>
+    />
   );
 }
