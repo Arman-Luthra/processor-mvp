@@ -1,5 +1,9 @@
 import { useEffect, useRef } from "react";
 import { Editor } from "@tiptap/react";
+import { 
+  Bold, Italic, Underline, StrikethroughIcon, 
+  Subscript, Superscript, Link, Code 
+} from "lucide-react";
 
 interface SelectionMenuProps {
   editor: Editor;
@@ -128,56 +132,56 @@ export default function SelectionMenu({
             title="Bold"
             onClick={() => applyFormatting("bold")}
           >
-            <i className="ri-bold"></i>
+            <Bold size={16} />
           </button>
           <button
             className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]"
             title="Italic"
             onClick={() => applyFormatting("italic")}
           >
-            <i className="ri-italic"></i>
+            <Italic size={16} />
           </button>
           <button
             className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]"
             title="Underline"
             onClick={() => applyFormatting("underline")}
           >
-            <i className="ri-underline"></i>
+            <Underline size={16} />
           </button>
           <button
             className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]"
             title="Strikethrough"
             onClick={() => applyFormatting("strikethrough")}
           >
-            <i className="ri-strikethrough"></i>
+            <StrikethroughIcon size={16} />
           </button>
           <button
             className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]"
             title="Subscript"
             onClick={() => applyFormatting("subscript")}
           >
-            <i className="ri-subscript"></i>
+            <Subscript size={16} />
           </button>
           <button
             className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]"
             title="Superscript"
             onClick={() => applyFormatting("superscript")}
           >
-            <i className="ri-superscript"></i>
+            <Superscript size={16} />
           </button>
           <button
             className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]"
             title="Link"
             onClick={() => applyFormatting("link")}
           >
-            <i className="ri-link"></i>
+            <Link size={16} />
           </button>
           <button
             className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]"
             title="Code"
             onClick={() => applyFormatting("code")}
           >
-            <i className="ri-code-s-slash-line"></i>
+            <Code size={16} />
           </button>
         </div>
       </div>

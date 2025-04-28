@@ -79,6 +79,32 @@ export default function TextBlock({
       });
     }
   }, [block.type, editor]);
+  
+  // Handle custom block-enter event from TipTap extension
+  useEffect(() => {
+    const handleBlockEnter = (event: CustomEvent) => {
+      // Only handle if this block's editor is active
+      if (editor && editor.isFocused) {
+        const { empty } = event.detail;
+        
+        if (empty && editor.isEmpty) {
+          // Don't create a new block on empty blocks when pressing Enter
+          return;
+        }
+        
+        // Create a new block after this one
+        addBlockAfter(block.id);
+      }
+    };
+    
+    // Add event listener
+    window.addEventListener('block-enter', handleBlockEnter as EventListener);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('block-enter', handleBlockEnter as EventListener);
+    };
+  }, [editor, block.id, addBlockAfter]);
 
   // Handle keyboard shortcuts
   const handleKeyDown = (event: React.KeyboardEvent) => {

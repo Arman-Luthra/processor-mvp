@@ -13,7 +13,7 @@ const CustomPlaceholder = Placeholder.configure({
   showOnlyWhenEditable: true,
   showOnlyCurrent: false,
   emptyEditorClass: "is-editor-empty",
-  emptyNodeClass: "is-empty',",
+  emptyNodeClass: "is-empty",
 });
 
 // Custom extension to handle keyboard navigation between blocks
@@ -21,7 +21,34 @@ const KeyboardHandler = Extension.create({
   name: "keyboardHandler",
   addKeyboardShortcuts() {
     return {
-      // Handled in the component
+      // Keyboard shortcuts for formatting
+      'Mod-b': () => this.editor.commands.toggleBold(),
+      'Mod-i': () => this.editor.commands.toggleItalic(),
+      'Mod-u': () => this.editor.commands.toggleUnderline(),
+      'Mod-`': () => this.editor.commands.toggleCode(),
+      'Mod-Shift-.': () => this.editor.commands.toggleSuperscript(),
+      'Mod-Shift-,': () => this.editor.commands.toggleSubscript(),
+      
+      // Note: Enter key handled in the TextBlock component
+      // This prevents default Enter behavior from TipTap
+      Enter: ({ editor }) => {
+        const { state } = editor;
+        const { selection } = state;
+        const { empty } = selection;
+        
+        // Let TipTap handle Enter inside code blocks
+        if (editor.isActive('codeBlock')) {
+          return false;
+        }
+        
+        // Let component handle Enter
+        const event = new CustomEvent('block-enter', {
+          detail: { empty }
+        });
+        window.dispatchEvent(event);
+        
+        return true;
+      },
     };
   },
 });
