@@ -213,22 +213,27 @@ export default function TextBlock({
     updateBlock(block.id, { type });
     setShowFormatMenu(false);
     
-    // Add special list HTML for better styling
-    if (type === "bulletList" && editor) {
-      editor.commands.setContent('<ul class="list-disc"><li>' + editor.getHTML() + '</li></ul>');
-    } else if (type === "numberedList" && editor) {
-      editor.commands.setContent('<ol class="list-decimal"><li>' + editor.getHTML() + '</li></ol>');
-    } else if (type === "dashedList" && editor) {
-      editor.commands.setContent('<ul class="list-none"><li>- ' + editor.getHTML() + '</li></ul>');
-    }
+    // Get existing content as plain text
+    const content = editor ? editor.getText() : "";
     
-    // Focus back on the editor after changing format
-    setTimeout(() => {
-      // Use the editor's view to focus instead of directly calling focus
-      if (editor && editor.view) {
-        editor.view.focus();
+    // Add special list HTML for better styling based on block type
+    if (editor) {
+      if (type === "bulletList") {
+        // Add bullet list format
+        editor.commands.setContent(`<ul><li>${content || 'List item'}</li></ul>`);
+      } else if (type === "numberedList") {
+        // Add numbered list format
+        editor.commands.setContent(`<ol><li>${content || 'List item'}</li></ol>`);
+      } else if (type === "dashedList") {
+        // Add dashed list format with dash prefix
+        editor.commands.setContent(`<ul class="list-none"><li>- ${content || 'List item'}</li></ul>`);
       }
-    }, 10);
+      
+      // Focus back and position cursor at the end
+      setTimeout(() => {
+        editor.commands.focus('end');
+      }, 10);
+    }
   };
 
   // Helper to get block class based on type

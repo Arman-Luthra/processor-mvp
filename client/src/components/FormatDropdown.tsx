@@ -79,8 +79,15 @@ export default function FormatDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="fixed z-10 bg-white shadow-md rounded-md w-40 overflow-hidden border border-[#E0DFDC]"
-      style={{ top: position.top, left: position.left }}
+      className="fixed z-10 bg-white shadow-md rounded-md w-40 overflow-hidden border border-[#E0DFDC] opacity-0 transition-opacity duration-75"
+      style={{ 
+        top: position.top, 
+        left: position.left,
+        // Only show when we have a valid position
+        opacity: position.top > 0 ? 1 : 0,
+        // Add transform to position correctly
+        transform: `translate3d(0, 0, 0)`,
+      }}
     >
       <div className="format-options py-0.5">
         {formatOptions.map((option) => (
