@@ -168,13 +168,19 @@ export default function TextBlock({
     
     // Backspace key on empty block deletes the block and moves cursor to previous block
     if (event.key === "Backspace" && editor.isEmpty) {
-      event.preventDefault();
-      
-      // Signal to NotionEditor to delete this block and focus the previous one
-      const deleteEvent = new CustomEvent('block-delete-backward', {
-        detail: { blockId: block.id }
-      });
-      window.dispatchEvent(deleteEvent);
+      // Don't delete the first block, as it should always exist
+      if (!isFirstBlock) {
+        event.preventDefault();
+        
+        // Signal to NotionEditor to delete this block and focus the previous one
+        const deleteEvent = new CustomEvent('block-delete-backward', {
+          detail: { blockId: block.id }
+        });
+        window.dispatchEvent(deleteEvent);
+      } else {
+        // For first block, do nothing special on backspace when empty
+        // This ensures normal behavior without weird effects
+      }
     }
     
     // '/' key for commands
@@ -191,12 +197,32 @@ export default function TextBlock({
 
   // Apply formatting to block
   const handleFormatSelect = (type: Block["type"]) => {
+    // First clear all existing formats
+    const clearAllFormats = () => {
+      if (editor?.isActive('bulletList')) {
+        editor.chain().focus().toggleBulletList().run();
+      }
+      if (editor?.isActive('orderedList')) {
+        editor.chain().focus().toggleOrderedList().run();
+      }
+      if (editor?.isActive('codeBlock')) {
+        editor.chain().focus().toggleCodeBlock().run();
+      }
+      if (editor?.isActive('heading')) {
+        editor.chain().focus().setParagraph().run();
+      }
+    };
+
     // Update block type in the state
     updateBlock(block.id, { type });
     setShowFormatMenu(false);
 
     // Apply proper formatting using TipTap's commands
     if (editor) {
+      // First clear any existing formats
+      clearAllFormats();
+
+      // Then apply the new format
       switch (type) {
         case "title":
         case "heading1":
@@ -260,7 +286,7 @@ export default function TextBlock({
   return (
     <div ref={blockRef} className="group relative">
       {/* Format menu button (appears on hover) */}
-      <div className="absolute left-0 -ml-8 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute left-0 -ml-8 top-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           ref={formatMenuButtonRef}
           className="w-6 h-6 flex items-center justify-center rounded hover:bg-[#F7F6F3] text-gray-400 hover:text-gray-700"

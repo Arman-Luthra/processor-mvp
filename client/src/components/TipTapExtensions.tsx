@@ -75,8 +75,12 @@ const KeyboardHandler = Extension.create({
             // We don't need a counter anymore - if the item is empty, exit the list directly
             // This makes it behave more like Notion - one empty Enter exits the list immediately
             
-            // We need to delete the empty list item first
-            this.editor.commands.deleteNode('listItem');
+            // First exit the list
+            if (this.editor.isActive('bulletList')) {
+              this.editor.commands.toggleBulletList();
+            } else if (this.editor.isActive('orderedList')) {
+              this.editor.commands.toggleOrderedList();
+            }
             
             // Force paragraph format for the current position
             this.editor.commands.setParagraph();
