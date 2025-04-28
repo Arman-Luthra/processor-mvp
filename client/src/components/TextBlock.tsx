@@ -158,7 +158,16 @@ export default function TextBlock({
       // Let code blocks handle Enter normally
       if (block.type === "code") return;
       
-      // Don't do anything here - let the extension handle it
+      // Special handling for list formats to preserve the list format for the new block
+      if (["bulletList", "numberedList", "dashedList"].includes(block.type)) {
+        event.preventDefault();
+        
+        // Create new block after this one with the same type
+        addBlockAfter(block.id, block.type);
+        return;
+      }
+      
+      // Don't do anything here for other types - let the extension handle it
       // This prevents multiple handler conflicts
     }
     
@@ -209,24 +218,31 @@ export default function TextBlock({
 
   // Apply formatting to block
   const handleFormatSelect = (type: Block["type"]) => {
-    // Apply the text formatting
+    // Update block type
     updateBlock(block.id, { type });
     setShowFormatMenu(false);
     
-    // Get existing content as plain text
-    const content = editor ? editor.getText() : "";
-    
-    // Add special list HTML for better styling based on block type
+    // Handle editor content formatting if editor exists
     if (editor) {
+      // Get existing content as plain text (ignoring any HTML)
+      const plainText = editor.getText() || 'List item';
+      
+      // First clear the content completely to remove any existing formats
+      editor.commands.clearContent();
+      
+      // Now add new content with proper formatting based on type
       if (type === "bulletList") {
-        // Add bullet list format
-        editor.commands.setContent(`<ul><li>${content || 'List item'}</li></ul>`);
+        // Bullet list format (• item)
+        editor.commands.setContent(`<ul><li>${plainText}</li></ul>`);
       } else if (type === "numberedList") {
-        // Add numbered list format
-        editor.commands.setContent(`<ol><li>${content || 'List item'}</li></ol>`);
+        // Numbered list format (1. item)
+        editor.commands.setContent(`<ol><li>${plainText}</li></ol>`);
       } else if (type === "dashedList") {
-        // Add dashed list format with dash prefix
-        editor.commands.setContent(`<ul class="list-none"><li>- ${content || 'List item'}</li></ul>`);
+        // Dashed list format (- item)
+        editor.commands.setContent(`<p>- ${plainText}</p>`);
+      } else {
+        // For non-list formats, just set the plain text
+        editor.commands.setContent(`<p>${plainText}</p>`);
       }
       
       // Focus back and position cursor at the end

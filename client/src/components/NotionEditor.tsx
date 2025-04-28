@@ -72,10 +72,22 @@ export default function NotionEditor({
       const blockIndex = prevBlocks.findIndex((b) => b.id === blockId);
       if (blockIndex === -1) return prevBlocks;
 
+      // Create appropriate content based on block type
+      let defaultContent = "";
+      
+      // If it's a list type, add the proper HTML structure
+      if (blockType === "bulletList") {
+        defaultContent = "<ul><li>List item</li></ul>";
+      } else if (blockType === "numberedList") {
+        defaultContent = "<ol><li>List item</li></ol>";
+      } else if (blockType === "dashedList") {
+        defaultContent = "<p>- List item</p>";
+      }
+      
       const newBlock: Block = {
         id: newBlockId,
         type: blockType,
-        content: "",
+        content: defaultContent,
       };
 
       return [

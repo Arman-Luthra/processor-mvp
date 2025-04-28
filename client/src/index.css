@@ -66,9 +66,9 @@
   @apply list-decimal pl-5;
 }
 
-.editor-content ul.list-none li:before {
-  content: "- ";
-  @apply mr-1;
+/* Style for dashed lists */
+.editor-content p:has(+ .dashedList) {
+  @apply relative pl-5;
 }
 
 /* Style for list items */
