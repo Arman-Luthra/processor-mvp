@@ -191,25 +191,37 @@ export default function TextBlock({
 
   // Apply formatting to block
   const handleFormatSelect = (type: Block["type"]) => {
-    // Update the block type first
+    // Update block type in the state
     updateBlock(block.id, { type });
     setShowFormatMenu(false);
     
-    // Handle content formatting for the editor
+    // Apply proper formatting using TipTap's built-in commands
     if (editor) {
-      // Strip any existing formatting characters from the beginning
-      let content = editor.getText() || '';
+      if (type === "title" || type === "heading1" || type === "heading2" || type === "heading3") {
+        // Convert headings using the built-in heading command
+        const level = type === "title" ? 1 : 
+                      type === "heading1" ? 1 : 
+                      type === "heading2" ? 2 : 3;
+        editor.chain().focus().setHeading({ level }).run();
+      } 
+      else if (type === "bulletList") {
+        // Convert to bullet list using TipTap's bulletList command
+        editor.chain().focus().toggleBulletList().run();
+      } 
+      else if (type === "orderedList") {
+        // Convert to ordered list using TipTap's orderedList command
+        editor.chain().focus().toggleOrderedList().run();
+      } 
+      else if (type === "code") {
+        // Convert to code block
+        editor.chain().focus().toggleCodeBlock().run();
+      } 
+      else {
+        // For other types (paragraph), just set to regular text
+        editor.chain().focus().setParagraph().run();
+      }
       
-      // Remove any bullet/number/dash prefixes from the text
-      content = content.replace(/^[•\-\d]+\.?\s+/, '');
-      
-      // For list types, we leave the content clean and rely on CSS for the visual markers
-      // This ensures changing between formats doesn't stack prefixes
-      
-      // Set the clean content and focus
-      editor.commands.setContent(content);
-      
-      // Focus back on the editor after changing format
+      // Focus the editor after changing format
       setTimeout(() => {
         editor.commands.focus('end');
       }, 0);
@@ -233,7 +245,7 @@ export default function TextBlock({
         return "font-mono text-base";
       case "bulletList":
         return "text-base pl-5";
-      case "numberedList":
+      case "orderedList":
         return "text-base pl-5";
       case "dashedList":
         return "text-base pl-5";

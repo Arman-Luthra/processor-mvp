@@ -102,9 +102,9 @@ export const TipTapExtensions = [
       levels: [1, 2, 3],
     },
     codeBlock: false, // We'll use a custom configured version
-    bulletList: false, // We're handling bullet lists ourselves with CSS
-    orderedList: false, // We're handling ordered lists ourselves with CSS
-    listItem: false, // We're handling list items ourselves
+    bulletList: {}, // Use TipTap's built-in bullet list support with default config
+    orderedList: {}, // Use TipTap's built-in ordered list support with default config
+    listItem: {}, // Use TipTap's built-in list item support with default config
   }),
   Underline,
   Link.configure({

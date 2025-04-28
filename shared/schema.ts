@@ -53,9 +53,9 @@ export const blockSchema = z.object({
     "title", 
     "code", 
     "markdown",
-    // New list types
+    // List types (used by TipTap)
     "bulletList",
-    "numberedList",
+    "orderedList", // Renamed from "numberedList" to match TipTap
     "dashedList"
   ]),
   content: z.string(),

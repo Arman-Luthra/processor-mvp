@@ -28,8 +28,7 @@ export default function FormatDropdown({
     { type: "heading3", name: "Heading 3", icon: <Heading3 size={16} /> },
     { type: "paragraph", name: "Text", icon: <FileText size={16} /> },
     { type: "bulletList", name: "Bullet List", icon: <List size={16} /> },
-    { type: "numberedList", name: "Numbered List", icon: <ListOrdered size={16} /> },
-    { type: "dashedList", name: "Dashed List", icon: <Minus size={16} /> },
+    { type: "orderedList", name: "Numbered List", icon: <ListOrdered size={16} /> },
     { type: "code", name: "Code", icon: <Code size={16} /> },
   ];
 
