@@ -36,19 +36,24 @@ export default function FormatDropdown({
     { type: "code", name: "Code", icon: <Code size={16} /> },
   ];
 
-  // Position the dropdown to the left of the button
+  // Position the dropdown just once after mounting to prevent "phantom" positioning
   useEffect(() => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const dropdownWidth = 180; // Width of the dropdown
-      
-      // Always position to the left of the content
-      setPosition({
-        top: rect.top,
-        left: rect.left - dropdownWidth - 5, // Position to the left with small gap
-      });
-    }
-  }, [buttonRef]);
+    // Use a tiny timeout to ensure button ref is properly set
+    const positionTimer = setTimeout(() => {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        const dropdownWidth = 160; // Width of the dropdown (smaller)
+        
+        // Position menu in the left margin area
+        setPosition({
+          top: rect.top,
+          left: Math.max(10, rect.left - dropdownWidth - 5),
+        });
+      }
+    }, 5);
+    
+    return () => clearTimeout(positionTimer);
+  }, []);
 
   // Handle clicks outside the dropdown
   useEffect(() => {
@@ -72,20 +77,20 @@ export default function FormatDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="fixed z-10 bg-white shadow-md rounded-md w-44 overflow-hidden border border-[#E0DFDC]"
+      className="fixed z-10 bg-white shadow-md rounded-md w-40 overflow-hidden border border-[#E0DFDC]"
       style={{ top: position.top, left: position.left }}
     >
-      <div className="format-options py-1">
+      <div className="format-options py-0.5">
         {formatOptions.map((option) => (
           <div
             key={option.type}
-            className="flex items-center px-3 py-1.5 hover:bg-[#F7F6F3] cursor-pointer text-sm"
+            className="flex items-center px-2 py-1 hover:bg-[#F7F6F3] cursor-pointer text-sm"
             onClick={() => onSelect(option.type as Block["type"])}
           >
-            <div className="w-5 h-5 flex items-center justify-center mr-2 text-gray-600">
+            <div className="w-5 h-5 flex items-center justify-center mr-2 text-gray-500">
               {option.icon}
             </div>
-            <span className="text-gray-800">{option.name}</span>
+            <span className="text-gray-700">{option.name}</span>
           </div>
         ))}
       </div>

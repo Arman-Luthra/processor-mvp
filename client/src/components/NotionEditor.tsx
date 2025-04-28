@@ -186,12 +186,12 @@ export default function NotionEditor({
     <div className="min-h-screen flex justify-center">
       <div className="w-full max-w-[740px] px-4 py-10 md:py-20">
         {/* Document title */}
-        <div className="mb-10">
+        <div className="mb-10 pl-16"> {/* Added left padding for format menu */}
           <DocumentTitle title={title} onChange={handleTitleChange} />
         </div>
 
         {/* Text blocks */}
-        <div className="space-y-3">
+        <div className="space-y-3 pl-16"> {/* Added left padding for format menu */}
           {blocks.map((block) => (
             <TextBlock
               key={block.id}

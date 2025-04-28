@@ -232,7 +232,7 @@ export default function TextBlock({
   return (
     <div ref={blockRef} className="group relative">
       {/* Format menu button (appears on hover) */}
-      <div className="absolute left-0 -ml-10 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute left-0 -ml-8 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           ref={formatMenuButtonRef}
           className="w-6 h-6 flex items-center justify-center rounded hover:bg-[#F7F6F3] text-gray-400 hover:text-gray-700"
