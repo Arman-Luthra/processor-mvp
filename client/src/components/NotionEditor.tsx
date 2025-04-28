@@ -50,14 +50,30 @@ export default function NotionEditor({
     setTitle(newTitle);
   };
 
+  // Track the ID of the most recently created block
+  const [lastCreatedBlockId, setLastCreatedBlockId] = useState<string | null>(null);
+  const blockRefs = useRef<Map<string, HTMLElement>>(new Map());
+
+  // Register a block reference
+  const registerBlockRef = (id: string, element: HTMLElement | null) => {
+    if (element) {
+      blockRefs.current.set(id, element);
+    } else {
+      blockRefs.current.delete(id);
+    }
+  };
+
   // Add a new block after the current one
   const addBlockAfter = (blockId: string, blockType: Block["type"] = "paragraph") => {
+    const newBlockId = nanoid();
+    
+    // First update the blocks
     setBlocks((prevBlocks) => {
       const blockIndex = prevBlocks.findIndex((b) => b.id === blockId);
       if (blockIndex === -1) return prevBlocks;
 
       const newBlock: Block = {
-        id: nanoid(),
+        id: newBlockId,
         type: blockType,
         content: "",
       };
@@ -68,6 +84,9 @@ export default function NotionEditor({
         ...prevBlocks.slice(blockIndex + 1),
       ];
     });
+    
+    // Set the last created block ID
+    setLastCreatedBlockId(newBlockId);
   };
 
   // Delete a block and set focus to adjacent block
@@ -88,6 +107,27 @@ export default function NotionEditor({
     );
   };
 
+  // Focus the newly created block
+  useEffect(() => {
+    if (lastCreatedBlockId) {
+      // Short delay to ensure the DOM has updated
+      const timeoutId = setTimeout(() => {
+        const element = blockRefs.current.get(lastCreatedBlockId);
+        if (element) {
+          // Find the editor element and focus it
+          const editor = element.querySelector('.ProseMirror');
+          if (editor) {
+            (editor as HTMLElement).focus();
+          }
+        }
+        // Reset the last created block ID
+        setLastCreatedBlockId(null);
+      }, 10);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [lastCreatedBlockId, blocks]);
+
   return (
     <div className="min-h-screen flex justify-center">
       <div className="w-full max-w-[740px] px-4 py-10 md:py-20">
@@ -105,6 +145,8 @@ export default function NotionEditor({
               updateBlock={updateBlock}
               addBlockAfter={addBlockAfter}
               deleteBlock={deleteBlock}
+              registerBlockRef={registerBlockRef}
+              shouldFocus={block.id === lastCreatedBlockId}
             />
           ))}
         </div>

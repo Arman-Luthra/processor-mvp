@@ -11,6 +11,8 @@ interface TextBlockProps {
   updateBlock: (blockId: string, updatedData: Partial<Block>) => void;
   addBlockAfter: (blockId: string, blockType?: Block["type"]) => void;
   deleteBlock: (blockId: string) => void;
+  registerBlockRef?: (blockId: string, element: HTMLElement | null) => void;
+  shouldFocus?: boolean;
 }
 
 export default function TextBlock({
@@ -18,6 +20,8 @@ export default function TextBlock({
   updateBlock,
   addBlockAfter,
   deleteBlock,
+  registerBlockRef,
+  shouldFocus = false,
 }: TextBlockProps) {
   const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [showSelectionMenu, setShowSelectionMenu] = useState(false);
@@ -79,6 +83,23 @@ export default function TextBlock({
       });
     }
   }, [block.type, editor]);
+  
+  // Register block reference with parent
+  useEffect(() => {
+    if (registerBlockRef && blockRef.current) {
+      registerBlockRef(block.id, blockRef.current);
+      return () => registerBlockRef(block.id, null);
+    }
+  }, [block.id, registerBlockRef]);
+  
+  // Auto focus this block if shouldFocus is true
+  useEffect(() => {
+    if (shouldFocus && editor) {
+      setTimeout(() => {
+        editor.commands.focus('end');
+      }, 10);
+    }
+  }, [shouldFocus, editor]);
   
   // Handle custom editor-enter-key event from TipTap extension
   useEffect(() => {

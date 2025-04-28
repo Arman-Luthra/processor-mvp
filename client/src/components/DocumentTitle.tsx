@@ -52,10 +52,22 @@ export default function DocumentTitle({ title, onChange }: DocumentTitleProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      // Move focus to the first content block when pressing Enter in title
-      const firstBlock = document.querySelector('.editor-content');
-      if (firstBlock) {
-        (firstBlock as HTMLElement).focus();
+      
+      // Find the first editor content and focus its ProseMirror node
+      const firstEditorContent = document.querySelector('.ProseMirror');
+      if (firstEditorContent) {
+        // Focus the editor content
+        (firstEditorContent as HTMLElement).focus();
+        
+        // Set cursor at the beginning
+        const selection = window.getSelection();
+        if (selection) {
+          const range = document.createRange();
+          range.setStart(firstEditorContent, 0);
+          range.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
       } else {
         titleRef.current?.blur();
       }

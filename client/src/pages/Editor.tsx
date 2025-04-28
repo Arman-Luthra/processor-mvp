@@ -133,7 +133,7 @@ export default function Editor() {
     <div className="bg-background min-h-screen">
       <NotionEditor 
         initialTitle={newDocument?.title || document?.title || "Untitled"}
-        initialContent={newDocument?.content || document?.content || []}
+        initialContent={newDocument?.content || document?.content || [] as any[]}
         onSave={handleSave}
         isSaving={updateDocumentMutation.isPending}
       />
