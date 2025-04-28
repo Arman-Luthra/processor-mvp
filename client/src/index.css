@@ -57,40 +57,45 @@
   }
 }
 
-/* Styling for list-type blocks */
-.bulletList .ProseMirror {
+/* List style formatting using custom markers instead of HTML elements */
+.bulletList {
   position: relative;
+  padding-left: 10px;
 }
 
-.bulletList .ProseMirror::before {
+.bulletList::before {
   content: "•";
   position: absolute;
-  left: -16px;
-  top: 0px;
+  left: -10px;
   color: #666;
+  top: 8px;
+  font-size: 16px;
 }
 
-.numberedList .ProseMirror {
+.numberedList {
   position: relative;
+  padding-left: 10px;
 }
 
-.numberedList .ProseMirror::before {
+.numberedList::before {
   content: "1.";
   position: absolute;
   left: -20px;
-  top: 0px;
   color: #666;
+  top: 8px;
+  font-size: 14px;
 }
 
-.dashedList .ProseMirror {
+.dashedList {
   position: relative;
+  padding-left: 10px;
 }
 
-.dashedList .ProseMirror::before {
+.dashedList::before {
   content: "-";
   position: absolute;
-  left: -14px;
-  top: 0px;
+  left: -10px;
   color: #666;
+  top: 8px;
 }
 

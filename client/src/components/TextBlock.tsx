@@ -259,7 +259,7 @@ export default function TextBlock({
 
       {/* Editable content area */}
       <div
-        className={`py-1 focus:outline-none ${getBlockClass(block.type)}`}
+        className={`py-1 focus:outline-none ${getBlockClass(block.type)} ${block.type}`}
         data-placeholder="Type '/' for commands"
         onKeyDown={handleKeyDown}
       >
