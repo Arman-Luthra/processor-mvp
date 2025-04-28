@@ -16,7 +16,7 @@ export default function Editor() {
   const [newDocument, setNewDocument] = useState<Document | null>(null);
 
   const { data: document, isLoading, error } = useQuery<Document>({
-    queryKey: documentId ? [`/api/documents/${documentId}`] : null,
+    queryKey: documentId ? [`/api/documents/${documentId}`] : ['no-document'],
     enabled: !!documentId && !isCreatingDocument,
   });
 
@@ -114,12 +114,16 @@ export default function Editor() {
   const handleSave = (title: string, content: any[]) => {
     const currentDocument = newDocument || document;
     if (currentDocument) {
+      // Format content to ensure it's valid for our schema
+      const formattedContent = Array.isArray(content) ? content : [];
+      
       updateDocumentMutation.mutate({
         id: currentDocument.id,
         data: {
           title,
-          content,
-          updatedAt: new Date(),
+          content: formattedContent
+          // Removing updatedAt field since it's causing validation errors
+          // Let the server handle the timestamp
         },
       });
     }

@@ -80,31 +80,45 @@ export default function TextBlock({
     }
   }, [block.type, editor]);
   
-  // Handle custom block-enter event from TipTap extension
+  // Handle custom editor-enter-key event from TipTap extension
   useEffect(() => {
-    const handleBlockEnter = (event: CustomEvent) => {
-      // Only handle if this block's editor is active
-      if (editor && editor.isFocused) {
-        const { empty } = event.detail;
+    if (!editor) return;
+    
+    // Generate a unique ID for this editor instance if it doesn't have one
+    const editorElement = editor.view.dom;
+    const editorId = editorElement.id || `editor-${block.id}`;
+    editorElement.id = editorId;
+    
+    const handleEditorEnterKey = (event: CustomEvent) => {
+      const { editorId: eventEditorId, isEmpty } = event.detail;
+      
+      // Only handle if this is the active editor (the one that fired the event)
+      const isThisEditor = editorId === eventEditorId || editor.isFocused;
+      
+      if (isThisEditor) {
+        // Don't create a new block for empty blocks
+        if (isEmpty) return;
         
-        if (empty && editor.isEmpty) {
-          // Don't create a new block on empty blocks when pressing Enter
-          return;
-        }
+        // Don't create a new block for code blocks
+        if (block.type === "code") return;
         
         // Create a new block after this one
         addBlockAfter(block.id);
       }
     };
     
-    // Add event listener
-    window.addEventListener('block-enter', handleBlockEnter as EventListener);
+    // Add event listeners - listen both on the window and directly on the editor element
+    window.addEventListener('editor-enter-key', handleEditorEnterKey as EventListener);
+    editorElement.addEventListener('editor-enter-key', handleEditorEnterKey as EventListener);
     
     // Clean up
     return () => {
-      window.removeEventListener('block-enter', handleBlockEnter as EventListener);
+      window.removeEventListener('editor-enter-key', handleEditorEnterKey as EventListener);
+      if (editorElement) {
+        editorElement.removeEventListener('editor-enter-key', handleEditorEnterKey as EventListener);
+      }
     };
-  }, [editor, block.id, addBlockAfter]);
+  }, [editor, block.id, block.type, addBlockAfter]);
 
   // Handle keyboard shortcuts directly on the editor container
   const handleKeyDown = (event: React.KeyboardEvent) => {

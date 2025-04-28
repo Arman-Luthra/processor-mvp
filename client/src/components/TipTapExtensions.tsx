@@ -29,24 +29,26 @@ const KeyboardHandler = Extension.create({
       'Mod-Shift-.': () => this.editor.commands.toggleSuperscript(),
       'Mod-Shift-,': () => this.editor.commands.toggleSubscript(),
       
-      // Note: Enter key handled in the TextBlock component
-      // This prevents default Enter behavior from TipTap
-      Enter: ({ editor }) => {
-        const { state } = editor;
-        const { selection } = state;
-        const { empty } = selection;
-        
+      // Disable TipTap's built-in Enter behavior
+      Enter: () => {
         // Let TipTap handle Enter inside code blocks
-        if (editor.isActive('codeBlock')) {
+        if (this.editor.isActive('codeBlock')) {
           return false;
         }
         
-        // Let component handle Enter
-        const event = new CustomEvent('block-enter', {
-          detail: { empty }
+        // Dispatch a custom event that the TextBlock component will listen for
+        const event = new CustomEvent('editor-enter-key', {
+          detail: {
+            editorId: this.editor.options.element.id,
+            isEmpty: this.editor.isEmpty
+          }
         });
+        
+        // Dispatch on the editor element and window for wider compatibility
+        this.editor.options.element.dispatchEvent(event);
         window.dispatchEvent(event);
         
+        // Prevent TipTap's default Enter behavior
         return true;
       },
     };
