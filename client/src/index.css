@@ -143,18 +143,5 @@
   overflow-x: auto;
 }
 
-/* Show placeholder only for the first block */
-[data-is-first-block="true"] .ProseMirror p.is-empty:first-child::before {
-  content: attr(data-placeholder);
-  float: left;
-  color: #adb5bd;
-  pointer-events: none;
-  height: 0;
-  opacity: 0.5;
-}
-
-/* Hide placeholder for all other blocks */
-[data-is-first-block="false"] .ProseMirror p.is-empty:first-child::before {
-  content: none;
-}
+/* Custom placeholder styling is handled by TipTap's placeholder extension */
 

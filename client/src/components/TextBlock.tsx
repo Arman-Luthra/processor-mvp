@@ -278,10 +278,8 @@ export default function TextBlock({
         data-block-id={block.id}
       >
         <EditorContent 
-          className="editor-content" 
+          className={`editor-content ${isFirstBlock ? "first-block" : ""}`}
           editor={editor}
-          data-placeholder="Type '/' for commands"
-          data-is-first-block={isFirstBlock ? "true" : "false"}
         />
       </div>
 

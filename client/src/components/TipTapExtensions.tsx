@@ -10,9 +10,13 @@ import { Node } from "@tiptap/core";
 
 // Custom extension to handle placeholder visibility properly
 const CustomPlaceholder = Placeholder.configure({
-  placeholder: "Type '/' for commands",
+  placeholder: ({node, pos, editor}) => {
+    // Only show placeholder on first block to avoid duplication
+    const isFirstNode = pos === 0;
+    return isFirstNode ? "Type '/' for commands" : "";
+  },
   showOnlyWhenEditable: true,
-  showOnlyCurrent: false,
+  showOnlyCurrent: true, // Only show on focused node
   emptyEditorClass: "is-editor-empty",
   emptyNodeClass: "is-empty",
 });
