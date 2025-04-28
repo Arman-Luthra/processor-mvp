@@ -194,37 +194,39 @@ export default function TextBlock({
     // Update block type in the state
     updateBlock(block.id, { type });
     setShowFormatMenu(false);
-    
-    // Apply proper formatting using TipTap's built-in commands
+
+    // Apply proper formatting using TipTap's commands
     if (editor) {
-      if (type === "title" || type === "heading1" || type === "heading2" || type === "heading3") {
-        // Convert headings using the built-in heading command
-        const level = type === "title" ? 1 : 
-                      type === "heading1" ? 1 : 
-                      type === "heading2" ? 2 : 3;
-        editor.chain().focus().setHeading({ level }).run();
-      } 
-      else if (type === "bulletList") {
-        // Convert to bullet list using TipTap's bulletList command
-        editor.chain().focus().toggleBulletList().run();
-      } 
-      else if (type === "orderedList") {
-        // Convert to ordered list using TipTap's orderedList command
-        editor.chain().focus().toggleOrderedList().run();
-      } 
-      else if (type === "code") {
-        // Convert to code block
-        editor.chain().focus().toggleCodeBlock().run();
-      } 
-      else {
-        // For other types (paragraph), just set to regular text
-        editor.chain().focus().setParagraph().run();
+      switch (type) {
+        case "title":
+        case "heading1":
+          editor.chain().focus().setHeading({ level: 1 }).run();
+          break;
+        case "heading2":
+          editor.chain().focus().setHeading({ level: 2 }).run();
+          break;
+        case "heading3":
+          editor.chain().focus().setHeading({ level: 3 }).run();
+          break;
+        case "bulletList":
+          editor.chain().focus().toggleBulletList().run();
+          break;
+        case "orderedList":
+          editor.chain().focus().toggleOrderedList().run();
+          break;
+        case "code":
+          editor.chain().focus().toggleCodeBlock().run();
+          break;
+        case "paragraph":
+        default:
+          editor.chain().focus().setParagraph().run();
+          break;
       }
       
       // Focus the editor after changing format
       setTimeout(() => {
         editor.commands.focus('end');
-      }, 0);
+      }, 10);
     }
   };
 

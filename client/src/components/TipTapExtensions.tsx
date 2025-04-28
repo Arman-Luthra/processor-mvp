@@ -36,8 +36,14 @@ const KeyboardHandler = Extension.create({
         if (this.editor.isActive('codeBlock')) {
           return false;
         }
+        
+        // Let TipTap handle Enter in lists for proper indentation
+        if (this.editor.isActive('bulletList') || 
+            this.editor.isActive('orderedList')) {
+          return false;
+        }
 
-        // Create a new block on Enter (even if empty)
+        // For non-list, non-code formats, create a new block on Enter
         const event = new CustomEvent('editor-enter-key', {
           detail: {
             editorId: this.editor.options.element.id,
@@ -47,7 +53,7 @@ const KeyboardHandler = Extension.create({
 
         window.dispatchEvent(event);
 
-        // Prevent TipTap's default Enter behavior
+        // Prevent TipTap's default Enter behavior for regular paragraphs
         return true;
       },
     };
@@ -102,9 +108,21 @@ export const TipTapExtensions = [
       levels: [1, 2, 3],
     },
     codeBlock: false, // We'll use a custom configured version
-    bulletList: {}, // Use TipTap's built-in bullet list support with default config
-    orderedList: {}, // Use TipTap's built-in ordered list support with default config
-    listItem: {}, // Use TipTap's built-in list item support with default config
+    bulletList: {
+      HTMLAttributes: {
+        class: 'bullet-list',
+      },
+    },
+    orderedList: {
+      HTMLAttributes: {
+        class: 'ordered-list',
+      },
+    },
+    listItem: {
+      HTMLAttributes: {
+        class: 'list-item',
+      },
+    },
   }),
   Underline,
   Link.configure({

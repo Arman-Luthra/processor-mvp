@@ -57,45 +57,47 @@
   }
 }
 
-/* List style formatting using custom markers instead of HTML elements */
-.bulletList {
-  position: relative;
-  padding-left: 10px;
+/* Styling for TipTap editor elements */
+
+/* Bullet lists */
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
 }
 
-.bulletList::before {
-  content: "•";
-  position: absolute;
-  left: -10px;
-  color: #666;
-  top: 8px;
-  font-size: 16px;
+/* Ordered lists */
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
 }
 
-.numberedList {
-  position: relative;
-  padding-left: 10px;
+/* List items */
+.ProseMirror li {
+  margin-bottom: 0.25rem;
 }
 
-.numberedList::before {
-  content: "1.";
-  position: absolute;
-  left: -20px;
-  color: #666;
-  top: 8px;
-  font-size: 14px;
+/* Nested lists */
+.ProseMirror li ul,
+.ProseMirror li ol {
+  margin-top: 0.25rem;
 }
 
-.dashedList {
-  position: relative;
-  padding-left: 10px;
+/* Code blocks */
+.ProseMirror pre {
+  background-color: #f7f6f3;
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+  overflow-x: auto;
 }
 
-.dashedList::before {
-  content: "-";
-  position: absolute;
-  left: -10px;
-  color: #666;
-  top: 8px;
+/* Placeholder styling */
+.ProseMirror p.is-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
 }
 
