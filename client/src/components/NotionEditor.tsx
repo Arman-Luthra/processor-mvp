@@ -96,9 +96,41 @@ export default function NotionEditor({
     setBlocks((prevBlocks) => {
       // Don't delete if it's the last block
       if (prevBlocks.length <= 1) return prevBlocks;
+      
+      // Filter out the block to delete
       return prevBlocks.filter((b) => b.id !== blockId);
     });
   };
+  
+  // Check if we need to add an empty block at the end for better UX
+  useEffect(() => {
+    // Make sure there's at least one block in the document
+    if (blocks.length === 0) {
+      setBlocks([{
+        id: nanoid(),
+        type: "paragraph",
+        content: "",
+      }]);
+      return;
+    }
+    
+    // Check if we need to add an empty block at the end to allow users to click
+    const lastBlock = blocks[blocks.length - 1];
+    const lastBlockHasContent = lastBlock.content && lastBlock.content.trim() !== '';
+    
+    if (lastBlockHasContent) {
+      // If the last block has content, add an empty block at the end
+      const newBlockId = nanoid();
+      setBlocks([
+        ...blocks,
+        {
+          id: newBlockId,
+          type: "paragraph",
+          content: "",
+        }
+      ]);
+    }
+  }, [blocks.length]);
 
   // Update block content
   const updateBlock = (blockId: string, updatedData: Partial<Block>) => {

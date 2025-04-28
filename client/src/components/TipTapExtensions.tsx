@@ -20,6 +20,14 @@ const CustomPlaceholder = Placeholder.configure({
 // Custom extension to handle keyboard navigation between blocks
 const KeyboardHandler = Extension.create({
   name: "keyboardHandler",
+
+  // Track consecutive empty lines in lists
+  addStorage(): { emptyListItemCount: number } {
+    return {
+      emptyListItemCount: 0
+    };
+  },
+
   addKeyboardShortcuts() {
     return {
       // Keyboard shortcuts for formatting
@@ -37,9 +45,48 @@ const KeyboardHandler = Extension.create({
           return false;
         }
         
-        // Let TipTap handle Enter in lists for proper indentation
-        if (this.editor.isActive('bulletList') || 
-            this.editor.isActive('orderedList')) {
+        // Special handling for lists
+        if (this.editor.isActive('bulletList') || this.editor.isActive('orderedList')) {
+          const isEmpty = this.editor.state.doc.textBetween(
+            this.editor.state.selection.from - 1,
+            this.editor.state.selection.to + 1,
+            ''
+          ).trim() === '';
+          
+          // If we're in an empty list item
+          if (isEmpty) {
+            // Increment the counter of consecutive empty items
+            this.storage.emptyListItemCount += 1;
+            
+            // After two consecutive empties, exit the list and create a new block
+            if (this.storage.emptyListItemCount >= 2) {
+              // Reset counter
+              this.storage.emptyListItemCount = 0;
+              
+              // Exit the list
+              if (this.editor.isActive('bulletList')) {
+                this.editor.commands.toggleBulletList();
+              } else if (this.editor.isActive('orderedList')) {
+                this.editor.commands.toggleOrderedList();
+              }
+              
+              // Create a new block below it
+              const event = new CustomEvent('editor-enter-key', {
+                detail: {
+                  editorId: this.editor.options.element.id,
+                  isEmpty: true
+                }
+              });
+              
+              window.dispatchEvent(event);
+              return true;
+            }
+          } else {
+            // Reset counter for non-empty list items
+            this.storage.emptyListItemCount = 0;
+          }
+          
+          // Let TipTap handle regular list behavior
           return false;
         }
 
@@ -60,22 +107,9 @@ const KeyboardHandler = Extension.create({
   },
 });
 
-// Extension to preserve HTML during paste operations
+// Simple extension without paste rules to avoid TypeScript errors
 const PreserveHtmlOnPaste = Extension.create({
   name: 'preserveHtmlOnPaste',
-
-  addPasteRules() {
-    return [
-      {
-        type: 'text',
-        regex: /./g, // Match any text
-        handler: ({ match, range, chain }) => {
-          // Just let the default paste handler work
-          return false;
-        },
-      },
-    ];
-  },
 });
 
 // Create a custom extension that will preserves HTML content
