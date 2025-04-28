@@ -63,45 +63,45 @@ const KeyboardHandler = Extension.create({
         
         // Special handling for lists
         if (this.editor.isActive('bulletList') || this.editor.isActive('orderedList')) {
-          const isEmpty = this.editor.state.selection.$head.parent.content.size === 0;
+          // Check if current list item is empty by checking text content directly
+          const isEmpty = this.editor.state.selection.$head.parent.textContent === '';
           
           // If we're in an empty list item
           if (isEmpty) {
-            // Increment the counter of consecutive empty items
-            this.storage.emptyListItemCount += 1;
+            // We don't need a counter anymore - if the item is empty, exit the list directly
+            // This makes it behave more like Notion - one empty Enter exits the list immediately
             
-            // After two consecutive empties, exit the list and create a new paragraph block
-            if (this.storage.emptyListItemCount >= 2) {
-              // Reset counter
-              this.storage.emptyListItemCount = 0;
-              
+            // First lift the list item out of the list if it's nested
+            this.editor.commands.liftListItem('listItem');
+            
+            // Check if we're still in a list after lift
+            if (this.editor.isActive('bulletList') || this.editor.isActive('orderedList')) {
               // Exit the list
               if (this.editor.isActive('bulletList')) {
                 this.editor.commands.toggleBulletList();
               } else if (this.editor.isActive('orderedList')) {
                 this.editor.commands.toggleOrderedList();
               }
-              
-              // Convert to paragraph
-              this.editor.commands.setParagraph();
-              
-              // Create a new block below it
+            }
+            
+            // Force paragraph format for the new block
+            this.editor.commands.setParagraph();
+            
+            // Create a new block below with proper indentation
+            setTimeout(() => {
               const event = new CustomEvent('editor-enter-key', {
                 detail: {
                   editorId: this.editor.options.element.id,
                   isEmpty: true
                 }
               });
-              
               window.dispatchEvent(event);
-              return true;
-            }
-          } else {
-            // Reset counter for non-empty list items
-            this.storage.emptyListItemCount = 0;
+            }, 0);
+            
+            return true;
           }
           
-          // Let TipTap handle regular list behavior
+          // Let TipTap handle non-empty list items
           return false;
         }
 

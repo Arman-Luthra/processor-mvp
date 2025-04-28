@@ -129,10 +129,8 @@ export default function TextBlock({
         // Set flag to prevent multiple block creation
         isAddingBlock.current = true;
         
-        // Create a new block after this one with same type for lists
-        const newBlockType = ["bulletList", "numberedList", "dashedList"].includes(block.type) 
-          ? block.type 
-          : "paragraph";
+        // Always create a paragraph block after exiting a list, don't inherit list type
+        const newBlockType = "paragraph";
         
         addBlockAfter(block.id, newBlockType);
         
