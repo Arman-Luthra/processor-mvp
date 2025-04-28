@@ -91,6 +91,39 @@
   margin: 0;
 }
 
+/* Ensure proper indentation for nested lists */
+.ProseMirror ul ul,
+.ProseMirror ol ol,
+.ProseMirror ul ol,
+.ProseMirror ol ul {
+  padding-left: 1.5rem;
+}
+
+/* Improve the appearance of list items */
+.ProseMirror ul li {
+  list-style-type: disc;
+}
+
+.ProseMirror ol li {
+  list-style-type: decimal;
+}
+
+.ProseMirror ul li li {
+  list-style-type: circle;
+}
+
+.ProseMirror ol li li {
+  list-style-type: lower-alpha;
+}
+
+.ProseMirror ul li li li {
+  list-style-type: square;
+}
+
+.ProseMirror ol li li li {
+  list-style-type: lower-roman;
+}
+
 /* Custom list styling for better control */
 .bullet-list {
   margin-left: 0 !important;
@@ -110,12 +143,29 @@
   overflow-x: auto;
 }
 
-/* Placeholder styling */
+/* Placeholder styling - improved */
 .ProseMirror p.is-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
   color: #adb5bd;
   pointer-events: none;
   height: 0;
+  opacity: 0.5;
+}
+
+/* Make sure placeholder only shows when focused or if it's the only element */
+[data-placeholder]::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.ProseMirror:focus [data-placeholder]::before,
+.ProseMirror-focused [data-placeholder]::before {
+  opacity: 0.5;
 }
 

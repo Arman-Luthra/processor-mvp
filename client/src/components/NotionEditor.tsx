@@ -102,35 +102,7 @@ export default function NotionEditor({
     });
   };
   
-  // Check if we need to add an empty block at the end for better UX
-  useEffect(() => {
-    // Make sure there's at least one block in the document
-    if (blocks.length === 0) {
-      setBlocks([{
-        id: nanoid(),
-        type: "paragraph",
-        content: "",
-      }]);
-      return;
-    }
-    
-    // Check if we need to add an empty block at the end to allow users to click
-    const lastBlock = blocks[blocks.length - 1];
-    const lastBlockHasContent = lastBlock.content && lastBlock.content.trim() !== '';
-    
-    if (lastBlockHasContent) {
-      // If the last block has content, add an empty block at the end
-      const newBlockId = nanoid();
-      setBlocks([
-        ...blocks,
-        {
-          id: newBlockId,
-          type: "paragraph",
-          content: "",
-        }
-      ]);
-    }
-  }, [blocks.length]);
+  // We'll remove the automatic block creation effect as it's causing multiple placeholder issues
 
   // Update block content
   const updateBlock = (blockId: string, updatedData: Partial<Block>) => {
@@ -237,6 +209,30 @@ export default function NotionEditor({
               shouldFocus={block.id === lastCreatedBlockId}
             />
           ))}
+          
+          {/* Add block button at the end */}
+          <div 
+            className="flex items-center cursor-pointer opacity-30 hover:opacity-100 transition-opacity my-2"
+            onClick={() => {
+              // Add a new paragraph block at the end
+              const lastBlockId = blocks.length > 0 ? blocks[blocks.length - 1].id : null;
+              if (lastBlockId) {
+                addBlockAfter(lastBlockId, 'paragraph');
+              } else {
+                // If no blocks, create the first one
+                const newBlockId = nanoid();
+                setBlocks([{
+                  id: newBlockId,
+                  type: "paragraph",
+                  content: "",
+                }]);
+                setLastCreatedBlockId(newBlockId);
+              }
+            }}
+          >
+            <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center text-gray-500 hover:bg-gray-100">+</div>
+            <span className="ml-2 text-sm text-gray-500">Add a block</span>
+          </div>
         </div>
 
         {/* Autosave indicator */}

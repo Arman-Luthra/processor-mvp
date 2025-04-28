@@ -37,6 +37,22 @@ const KeyboardHandler = Extension.create({
       'Mod-`': () => this.editor.commands.toggleCode(),
       'Mod-Shift-.': () => this.editor.commands.toggleSuperscript(),
       'Mod-Shift-,': () => this.editor.commands.toggleSubscript(),
+      
+      // Tab key for list indentation
+      Tab: () => {
+        if (this.editor.isActive('bulletList') || this.editor.isActive('orderedList')) {
+          return this.editor.commands.sinkListItem('listItem');
+        }
+        return false;
+      },
+      
+      // Shift+Tab for list outdent
+      'Shift-Tab': () => {
+        if (this.editor.isActive('bulletList') || this.editor.isActive('orderedList')) {
+          return this.editor.commands.liftListItem('listItem');
+        }
+        return false;
+      },
 
       // Handle Enter key
       Enter: () => {
@@ -47,18 +63,14 @@ const KeyboardHandler = Extension.create({
         
         // Special handling for lists
         if (this.editor.isActive('bulletList') || this.editor.isActive('orderedList')) {
-          const isEmpty = this.editor.state.doc.textBetween(
-            this.editor.state.selection.from - 1,
-            this.editor.state.selection.to + 1,
-            ''
-          ).trim() === '';
+          const isEmpty = this.editor.state.selection.$head.parent.content.size === 0;
           
           // If we're in an empty list item
           if (isEmpty) {
             // Increment the counter of consecutive empty items
             this.storage.emptyListItemCount += 1;
             
-            // After two consecutive empties, exit the list and create a new block
+            // After two consecutive empties, exit the list and create a new paragraph block
             if (this.storage.emptyListItemCount >= 2) {
               // Reset counter
               this.storage.emptyListItemCount = 0;
@@ -69,6 +81,9 @@ const KeyboardHandler = Extension.create({
               } else if (this.editor.isActive('orderedList')) {
                 this.editor.commands.toggleOrderedList();
               }
+              
+              // Convert to paragraph
+              this.editor.commands.setParagraph();
               
               // Create a new block below it
               const event = new CustomEvent('editor-enter-key', {
