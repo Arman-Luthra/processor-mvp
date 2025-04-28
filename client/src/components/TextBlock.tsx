@@ -4,6 +4,7 @@ import FormatDropdown from "@/components/FormatDropdown";
 import SelectionMenu from "@/components/SelectionMenu";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { TipTapExtensions } from "@/components/TipTapExtensions";
+import { MoreVertical } from "lucide-react";
 
 interface TextBlockProps {
   block: Block;
@@ -123,7 +124,13 @@ export default function TextBlock({
   const handleFormatSelect = (type: Block["type"]) => {
     updateBlock(block.id, { type });
     setShowFormatMenu(false);
-    editor?.focus();
+    // Focus back on the editor after changing format
+    setTimeout(() => {
+      // Use the editor's view to focus instead of directly calling focus
+      if (editor && editor.view) {
+        editor.view.focus();
+      }
+    }, 0);
   };
 
   // Helper to get block class based on type
@@ -157,7 +164,7 @@ export default function TextBlock({
           onClick={toggleFormatMenu}
           aria-label="Format options"
         >
-          <i className="ri-more-fill"></i>
+          <MoreVertical size={16} />
         </button>
       </div>
 

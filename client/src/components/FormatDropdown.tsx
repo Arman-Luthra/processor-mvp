@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Block } from "@shared/schema";
+import { FileText, Heading1, Heading2, Heading3, Type, Code, Bookmark } from "lucide-react";
 
 interface FormatOption {
   type: Block["type"];
@@ -28,43 +29,43 @@ export default function FormatDropdown({
       type: "title",
       title: "Title",
       description: "Large heading",
-      icon: <span className="text-lg font-bold">T</span>,
+      icon: <Type size={18} />,
     },
     {
       type: "heading1",
       title: "Heading 1",
       description: "Section heading",
-      icon: <span className="text-md font-semibold">H1</span>,
+      icon: <Heading1 size={18} />,
     },
     {
       type: "heading2",
       title: "Heading 2",
       description: "Subsection heading",
-      icon: <span className="text-md font-semibold">H2</span>,
+      icon: <Heading2 size={18} />,
     },
     {
       type: "heading3",
       title: "Heading 3",
       description: "Smaller heading",
-      icon: <span className="text-md font-semibold">H3</span>,
+      icon: <Heading3 size={18} />,
     },
     {
       type: "paragraph",
       title: "Paragraph",
       description: "Normal text",
-      icon: <i className="ri-paragraph"></i>,
+      icon: <FileText size={18} />,
     },
     {
       type: "markdown",
       title: "Markdown",
       description: "Formatted text",
-      icon: <span className="text-md font-semibold">MD</span>,
+      icon: <Bookmark size={18} />,
     },
     {
       type: "code",
       title: "Code",
       description: "Syntax highlighting",
-      icon: <i className="ri-code-s-slash-line"></i>,
+      icon: <Code size={18} />,
     },
   ];
 
@@ -116,8 +117,8 @@ export default function FormatDropdown({
             <div className="w-8 h-8 flex items-center justify-center rounded-md bg-[#F7F6F3] mr-2">
               {option.icon}
             </div>
-            <div>
-              <div className="font-medium">{option.title}</div>
+            <div className="flex-1">
+              <div className="font-medium text-gray-800">{option.title}</div>
               <div className="text-xs text-gray-500">{option.description}</div>
             </div>
           </div>
