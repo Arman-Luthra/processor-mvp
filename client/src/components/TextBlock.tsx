@@ -592,6 +592,10 @@ export default function TextBlock({
     };
   }, [editor, showFormatMenu]);
 
+  useEffect(() => {
+    if (isDragging) setShowFormatMenu(false);
+  }, [isDragging]);
+
   const showMenu = isActive || isHovered;
 
   const getWordCount = () => {
