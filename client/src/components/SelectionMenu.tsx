@@ -76,10 +76,10 @@ export default function SelectionMenu({
         }
         break;
       case "subscript":
-        editor.chain().focus().toggleSubscript().run();
+        editor.chain().focus().unsetSuperscript().toggleSubscript().run();
         break;
       case "superscript":
-        editor.chain().focus().toggleSuperscript().run();
+        editor.chain().focus().unsetSubscript().toggleSuperscript().run();
         break;
       default:
         break;

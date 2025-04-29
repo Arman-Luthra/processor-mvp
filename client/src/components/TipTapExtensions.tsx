@@ -36,8 +36,14 @@ const KeyboardHandler = Extension.create({
       'Mod-i': () => this.editor.commands.toggleItalic(),
       'Mod-u': () => this.editor.commands.toggleUnderline(),
       'Mod-`': () => this.editor.commands.toggleCode(),
-      'Mod-Shift-.': () => this.editor.commands.toggleSuperscript(),
-      'Mod-Shift-,': () => this.editor.commands.toggleSubscript(),
+      'Mod-Shift-.': () => {
+        this.editor.chain().focus().unsetSubscript().toggleSuperscript().run();
+        return true;
+      },
+      'Mod-Shift-,': () => {
+        this.editor.chain().focus().unsetSuperscript().toggleSubscript().run();
+        return true;
+      },
       
       // Tab key for list indentation
       Tab: () => {
