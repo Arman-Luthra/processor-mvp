@@ -35,6 +35,7 @@ export default function TextBlock({
   const [selectionPosition, setSelectionPosition] = useState({ top: 0, left: 0 });
   const [selectedText, setSelectedText] = useState("");
   const formatMenuButtonRef = useRef<HTMLDivElement>(null);
+  const isProcessingCommand = useRef(false);
 
   // Initialize dnd-kit sortable
   const {
@@ -153,6 +154,9 @@ export default function TextBlock({
       // Prevent duplicate block creation
       if (isAddingBlock.current) return;
       
+      // Skip if we're processing a slash command
+      if (isProcessingCommand.current) return;
+      
       const { editorId: eventEditorId, forceNewBlock } = event.detail;
       
       // Only handle if this is the active editor (the one that fired the event)
@@ -240,6 +244,120 @@ export default function TextBlock({
     // Enter key creates a new block - but we'll let the extension handle this
     // to avoid duplicate blocks being created
     if (event.key === "Enter" && !event.shiftKey) {
+      // Process slash commands when Enter is pressed - check this first
+      if (editor.getText().startsWith('/')) {
+        // Immediately prevent default to stop any cursor movement
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const command = editor.getText().trim().toLowerCase();
+        let blockType: Block["type"] | null = null;
+        
+        switch (command) {
+          case '/title':
+          case '/h1':
+            blockType = 'title';
+            break;
+          case '/heading':
+          case '/h2':
+            blockType = 'heading2';
+            break;
+          case '/subheading':
+          case '/h3':
+            blockType = 'heading3';
+            break;
+          case '/body':
+            blockType = 'paragraph';
+            break;
+          case '/monostyled':
+          case '/code':
+            blockType = 'code';
+            break;
+          case '/bulletedlist':
+            blockType = 'bulletList';
+            break;
+          case '/numberedlist':
+            blockType = 'orderedList';
+            break;
+        }
+        
+        if (blockType) {
+          // Set flag to prevent new block creation
+          isProcessingCommand.current = true;
+          
+          // Store current state for restoring
+          const oldState = editor.state;
+          
+          // Temporarily disable TipTap keyboard events
+          const oldHandleKeyDown = editor.view.dom.onkeydown;
+          editor.view.dom.onkeydown = function(e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              e.stopPropagation();
+              return false;
+            }
+            return oldHandleKeyDown?.call(this, e);
+          };
+          
+          // Clear content and update immediately
+          editor.commands.clearContent();
+          updateBlock(block.id, { type: blockType as Block["type"] });
+          
+          // Apply format based on type
+          switch (blockType) {
+            case "title":
+              editor.chain().focus().setHeading({ level: 1 }).run();
+              break;
+            case "heading2":
+              editor.chain().focus().setHeading({ level: 2 }).run();
+              break;
+            case "heading3":
+              editor.chain().focus().setHeading({ level: 3 }).run();
+              break;
+            case "bulletList":
+              editor.chain().focus().run();
+              editor.commands.insertContent({
+                type: 'bulletList',
+                content: [{
+                  type: 'listItem',
+                  content: [{ type: 'paragraph' }]
+                }]
+              });
+              break;
+            case "orderedList":
+              editor.chain().focus().run();
+              editor.commands.insertContent({
+                type: 'orderedList',
+                content: [{
+                  type: 'listItem',
+                  content: [{ type: 'paragraph' }]
+                }]
+              });
+              break;
+            case "code":
+              editor.chain().focus().setCodeBlock().run();
+              break;
+            case "paragraph":
+            default:
+              editor.chain().focus().setParagraph().run();
+              break;
+          }
+          
+          // Restore keyboard handler
+          setTimeout(() => {
+            editor.view.dom.onkeydown = oldHandleKeyDown;
+            editor.commands.focus('end');
+            
+            // Reset processing flag
+            setTimeout(() => {
+              isProcessingCommand.current = false;
+            }, 100);
+          }, 50);
+          
+          return;
+        }
+      }
+      
       // Let code blocks handle Enter normally
       if (block.type === "code") return;
       
@@ -264,10 +382,15 @@ export default function TextBlock({
       }
     }
     
-    // '/' key for commands
+    // '/' key for commands - only open format menu on "/" if we're not already in a command
     if (event.key === "/" && editor.isEmpty) {
-      event.preventDefault();
-      setShowFormatMenu(true);
+      // Don't prevent default here - allow the "/" to be typed
+      setTimeout(() => {
+        // Only open format menu if we just typed "/" and nothing else
+        if (editor.getText() === "/") {
+          setShowFormatMenu(true);
+        }
+      }, 10);
     }
   };
 
@@ -294,7 +417,6 @@ export default function TextBlock({
     // Apply the new format with the extracted text
     switch (type) {
       case "title":
-      case "heading1":
         editor.chain().focus().setHeading({ level: 1 }).run();
         if (currentText) editor.chain().insertContent(currentText).run();
         break;
@@ -403,7 +525,7 @@ export default function TextBlock({
         return "Code";
       case "paragraph":
       default:
-        return "Text";
+        return "Body";
     }
   };
 
@@ -433,6 +555,30 @@ export default function TextBlock({
         return "text-base";
     }
   };
+
+  // Monitor text changes to handle slash commands
+  useEffect(() => {
+    if (!editor || !showFormatMenu) return;
+    
+    const handleTextUpdate = () => {
+      const text = editor.getText();
+      // If user has typed more than just "/", close the format menu
+      // as they're likely typing a command
+      if (text.length > 1 && text.startsWith('/')) {
+        setShowFormatMenu(false);
+      }
+    };
+    
+    const updateListener = () => {
+      handleTextUpdate();
+    };
+    
+    editor.on('update', updateListener);
+    
+    return () => {
+      editor.off('update', updateListener);
+    };
+  }, [editor, showFormatMenu]);
 
   return (
     <div

@@ -22,14 +22,14 @@ export default function FormatDropdown({
 
   // Format options - simpler version with just names
   const formatOptions = [
-    { type: "title", name: "Title", icon: <Type size={16} /> },
-    { type: "heading1", name: "Heading 1", icon: <Heading1 size={16} /> },
-    { type: "heading2", name: "Heading 2", icon: <Heading2 size={16} /> },
-    { type: "heading3", name: "Heading 3", icon: <Heading3 size={16} /> },
-    { type: "paragraph", name: "Text", icon: <FileText size={16} /> },
-    { type: "bulletList", name: "Bullet List", icon: <List size={16} /> },
-    { type: "orderedList", name: "Numbered List", icon: <ListOrdered size={16} /> },
-    { type: "code", name: "Code", icon: <Code size={16} /> },
+    { type: "title", name: "Title", shortcut: "/title, /h1", icon: <Type size={16} /> },
+    { type: "heading1", name: "Heading 1", shortcut: "/heading1", icon: <Heading1 size={16} /> },
+    { type: "heading2", name: "Heading 2", shortcut: "/heading, /h2", icon: <Heading2 size={16} /> },
+    { type: "heading3", name: "Heading 3", shortcut: "/subheading, /h3", icon: <Heading3 size={16} /> },
+    { type: "paragraph", name: "Body", shortcut: "/body", icon: <FileText size={16} /> },
+    { type: "bulletList", name: "Bullet List", shortcut: "/bulletedlist", icon: <List size={16} /> },
+    { type: "orderedList", name: "Numbered List", shortcut: "/numberedlist", icon: <ListOrdered size={16} /> },
+    { type: "code", name: "Code", shortcut: "/monostyled, /code", icon: <Code size={16} /> },
   ];
 
   // Position the dropdown when the menu opens
@@ -68,7 +68,7 @@ export default function FormatDropdown({
   return (
     <div
       ref={dropdownRef}
-      className="fixed z-10 bg-white shadow-md rounded-md w-40 overflow-hidden border border-[#E0DFDC]"
+      className="fixed z-10 bg-white shadow-md rounded-md w-60 overflow-hidden border border-[#E0DFDC]"
       style={{ 
         top: position.top, 
         left: position.left,
@@ -85,7 +85,12 @@ export default function FormatDropdown({
             <div className="w-5 h-5 flex items-center justify-center mr-2 text-gray-500">
               {option.icon}
             </div>
-            <span className="text-gray-700">{option.name}</span>
+            <div className="flex-1">
+              <span className="text-gray-700">{option.name}</span>
+            </div>
+            {option.shortcut && (
+              <span className="text-xs text-gray-400 ml-2">{option.shortcut}</span>
+            )}
           </div>
         ))}
       </div>
