@@ -605,6 +605,10 @@ export default function TextBlock({
     return text.split(/\s+/).filter(Boolean).length;
   };
 
+  useEffect(() => {
+    if (!showMenu) setShowFormatMenu(false);
+  }, [showMenu]);
+
   return (
     <div className="flex flex-row items-start w-full">
       <div className="flex-1">
