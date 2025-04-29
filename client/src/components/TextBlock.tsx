@@ -639,19 +639,20 @@ export default function TextBlock({
             </div>
             {showMenu && (
               <div className="w-[160px] flex flex-col justify-start items-start pl-2 animate-fade-in">
-                <div className="flex flex-nowrap items-center justify-start py-1 px-3 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group w-full" ref={formatMenuButtonRef}>
+                <div className="flex flex-nowrap items-center justify-start py-1 px-3 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group w-full select-none" ref={formatMenuButtonRef} onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleFormatMenu();
+                }}>
                   <div 
-                    className="min-w-[8px] grid grid-rows-3 grid-cols-2 gap-px cursor-grab active:cursor-grabbing drag-handle"
+                    className="min-w-[8px] grid grid-rows-3 grid-cols-2 gap-px cursor-grab active:cursor-grabbing drag-handle select-none"
                     {...listeners}
                   >
                     {[...Array(6)].map((_, i) => (
-                      <div key={i} className="w-1 h-1 rounded-full bg-gray-400"></div>
+                      <div key={i} className="w-1 h-1 rounded-full bg-gray-400 select-none"></div>
                     ))}
                   </div>
-                  <span className="ml-2 whitespace-nowrap" onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFormatMenu();
-                  }}>{getBlockTypeName(block.type)}</span>
+                  <span className="ml-2 whitespace-nowrap select-none">{getBlockTypeName(block.type)}</span>
                 </div>
                 <div className="flex items-center justify-start w-full text-xs text-gray-400 select-none px-3 pb-1">
                   {getWordCount()} word{getWordCount() !== 1 ? 's' : ''}
