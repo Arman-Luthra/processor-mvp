@@ -638,6 +638,22 @@ export default function TextBlock({
   const showDropdown = block.type === "code" && (isActive || isDropdownOpen);
   const formatMenuVisible = showFormatMenu && showFormatMenuVisible;
 
+  useEffect(() => {
+    if (!editor) return;
+    const handlePaste = (event: ClipboardEvent) => {
+      event.preventDefault();
+      const text = event.clipboardData?.getData('text/plain') || '';
+      if (text) {
+        editor.commands.insertContent(text);
+      }
+    };
+    const dom = editor.view.dom;
+    dom.addEventListener('paste', handlePaste);
+    return () => {
+      dom.removeEventListener('paste', handlePaste);
+    };
+  }, [editor]);
+
   return (
     <div className="relative w-full">
       <div
