@@ -151,7 +151,7 @@
   align-items: flex-start;
 }
 
-/* Code blocks specific styling - restore original */
+/* Code blocks specific styling */
 .ProseMirror pre {
   background-color: #f7f6f3;
   border-radius: 0.25rem;
@@ -159,6 +159,37 @@
   font-family: monospace;
   font-size: 0.875rem;
   overflow-x: auto;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+/* Special hover effect for code blocks */
+.code .editor-content {
+  padding: 0; /* Remove padding for code blocks */
+}
+
+.code .editor-content .ProseMirror pre {
+  margin: 0.25rem 0; /* Add margin instead of padding */
+}
+
+.code .editor-content:hover .ProseMirror pre {
+  background-color: #eae8e2; /* Darker shade for hover */
+}
+
+/* Special focus effect for code blocks */
+.code .editor-content:has(.ProseMirror:focus) {
+  background-color: transparent; /* Remove default focus background */
+  animation: none; /* Remove default animation */
+}
+
+.code .editor-content:has(.ProseMirror:focus) .ProseMirror pre {
+  animation: code-block-highlight 1s ease forwards;
+}
+
+/* Animation for code block focus */
+@keyframes code-block-highlight {
+  0% { background-color: #e0ded6; } /* Even darker for initial focus */
+  100% { background-color: #f7f6f3; } /* Back to original color */
 }
 
 /* Drag and drop styles */

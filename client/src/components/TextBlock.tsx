@@ -384,14 +384,14 @@ export default function TextBlock({
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative group w-full flex ${isFirstBlock ? 'first-block' : ''}`}
+      className={`relative group w-full flex ${isFirstBlock ? 'first-block' : ''} ${block.type}`}
       {...attributes}
     >
       {/* Container for both content and format controls with fixed width */}
       <div className="w-full flex relative">
         {/* Editable content area with explicit width and its own click handler */}
         <div
-          className={`w-[calc(100%-100px)] py-1 focus:outline-none ${getBlockClass(block.type)} ${block.type}`}
+          className={`w-[calc(100%-100px)] py-1 focus:outline-none ${getBlockClass(block.type)}`}
           onKeyDown={handleKeyDown}
           data-block-id={block.id}
           onClick={() => {
