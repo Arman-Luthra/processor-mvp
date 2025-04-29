@@ -28,7 +28,7 @@ export default function NotionEditor({
       {
         id: nanoid(),
         type: "paragraph",
-        content: "",
+        content: "<p></p>",
       },
     ];
   });
@@ -77,7 +77,7 @@ export default function NotionEditor({
       const newBlock: Block = {
         id: newBlockId,
         type: blockType,
-        content: "",
+        content: blockType === "paragraph" ? "<p></p>" : "",
       };
 
       return [
@@ -188,9 +188,23 @@ export default function NotionEditor({
       if (titleRef.current) {
         titleRef.current.focus();
         
-        // Move cursor to end of title text
-        const length = titleRef.current.value.length;
-        titleRef.current.setSelectionRange(length, length);
+        // Move cursor to end of text for contentEditable div
+        const selection = window.getSelection();
+        const range = document.createRange();
+        
+        // Make sure there's content to select
+        if (titleRef.current.childNodes.length > 0) {
+          const lastChild = titleRef.current.childNodes[titleRef.current.childNodes.length - 1];
+          const length = lastChild.textContent?.length || 0;
+          range.setStart(lastChild, length);
+        } else {
+          // If empty, just put cursor at the beginning
+          range.setStart(titleRef.current, 0);
+        }
+        
+        range.collapse(true);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
       }
     };
     
@@ -246,7 +260,7 @@ export default function NotionEditor({
                 setBlocks([{
                   id: newBlockId,
                   type: "paragraph",
-                  content: "",
+                  content: "<p></p>",
                 }]);
                 setLastCreatedBlockId(newBlockId);
               }

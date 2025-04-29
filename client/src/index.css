@@ -59,6 +59,43 @@
 
 /* Styling for TipTap editor elements */
 
+/* Base editor styling */
+.ProseMirror {
+  min-height: 30px;
+  padding: 4px 0;
+  width: 100%;
+  cursor: text;
+}
+
+/* Make entire editor clickable by removing any float/positioning that might interfere */
+.editor-content {
+  width: 100%;
+  cursor: text;
+}
+
+/* Hide placeholder on all blocks by default */
+.ProseMirror p.is-empty::before {
+  content: none;
+  display: none;
+}
+
+/* Only show placeholder on the first block */
+.first-block .ProseMirror p.is-empty::before {
+  content: "Start writing";
+  color: #adb5bd;
+  pointer-events: none;
+  float: left;
+  height: 0;
+  display: block;
+}
+
+/* Title placeholder styling */
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #adb5bd;
+  pointer-events: none;
+}
+
 /* Bullet lists */
 .ProseMirror ul {
   list-style-type: disc;

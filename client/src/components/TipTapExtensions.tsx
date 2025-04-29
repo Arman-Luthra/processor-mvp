@@ -10,15 +10,11 @@ import { Node } from "@tiptap/core";
 
 // Custom extension to handle placeholder visibility properly
 const CustomPlaceholder = Placeholder.configure({
-  placeholder: ({node, pos, editor}) => {
-    // Only show placeholder on first block to avoid duplication
-    const isFirstNode = pos === 0;
-    return isFirstNode ? "Type '/' for commands" : "";
-  },
+  placeholder: "Start writing",
   showOnlyWhenEditable: true,
-  showOnlyCurrent: true, // Only show on focused node
+  showOnlyCurrent: false,
   emptyEditorClass: "is-editor-empty",
-  emptyNodeClass: "is-empty",
+  emptyNodeClass: "is-empty"
 });
 
 // Custom extension to handle keyboard navigation between blocks
@@ -59,19 +55,38 @@ const KeyboardHandler = Extension.create({
         return false;
       },
       
-      // Handle backspace in first block to navigate to title
+      // Handle backspace in empty block
       Backspace: () => {
-        const isAtStart = this.editor.state.selection.from === 1; // cursor at the very beginning
+        const isAtStart = this.editor.state.selection.from === 1;
+        const isEmpty = this.editor.isEmpty;
         const isFirstBlock = this.editor.options.element?.parentElement?.classList.contains('first-block');
         
-        if (isFirstBlock && isAtStart) {
-          // Trigger an event to focus the title
-          const event = new CustomEvent('focus-title', {});
-          window.dispatchEvent(event);
-          return true; // Prevent default backspace
+        if (isEmpty) {
+          if (isFirstBlock) {
+            // Focus title if in first block
+            const event = new CustomEvent('focus-title', {});
+            window.dispatchEvent(event);
+            return true;
+          } else {
+            // Delete current block and move to previous
+            const event = new CustomEvent('block-delete-backward', {
+              detail: {
+                blockId: this.editor.options.element?.id
+              }
+            });
+            window.dispatchEvent(event);
+            return true;
+          }
         }
         
-        return false; // Let TipTap handle normal backspace
+        if (isFirstBlock && isAtStart) {
+          // Focus title when at start of first block
+          const event = new CustomEvent('focus-title', {});
+          window.dispatchEvent(event);
+          return true;
+        }
+        
+        return false;
       },
 
       // Handle Enter key

@@ -249,6 +249,20 @@ export default function TextBlock({
     }
   };
 
+  // Add a direct DOM manipulation to force the placeholder visibility
+  useEffect(() => {
+    if (editor && isFirstBlock) {
+      const editorEl = editor.view.dom;
+      const paragraphs = editorEl.querySelectorAll('p');
+      
+      if (paragraphs.length > 0) {
+        const firstParagraph = paragraphs[0];
+        firstParagraph.setAttribute('data-placeholder', 'Start writing');
+        // Just set the data-placeholder attribute but don't add any manual elements
+      }
+    }
+  }, [editor, isFirstBlock]);
+
   // Helper to get block class based on type
   const getBlockClass = (type: Block["type"]) => {
     switch (type) {
@@ -277,13 +291,24 @@ export default function TextBlock({
   };
 
   return (
-    <div ref={blockRef} className="group relative">
+    <div
+      ref={blockRef}
+      className={`relative group w-full ${isFirstBlock ? 'first-block' : ''}`}
+      onClick={() => {
+        if (editor && !editor.isFocused) {
+          editor.commands.focus();
+        }
+      }}
+    >
       {/* Format menu button (appears on hover) */}
       <div className="absolute left-0 -ml-8 top-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           ref={formatMenuButtonRef}
           className="w-6 h-6 flex items-center justify-center rounded hover:bg-[#F7F6F3] text-gray-400 hover:text-gray-700"
-          onClick={toggleFormatMenu}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleFormatMenu();
+          }}
           aria-label="Format options"
         >
           <MoreVertical size={16} />
@@ -292,12 +317,12 @@ export default function TextBlock({
 
       {/* Editable content area */}
       <div
-        className={`py-1 focus:outline-none ${getBlockClass(block.type)} ${block.type}`}
+        className={`w-full py-1 focus:outline-none ${getBlockClass(block.type)} ${block.type}`}
         onKeyDown={handleKeyDown}
         data-block-id={block.id}
       >
         <EditorContent 
-          className={`editor-content ${isFirstBlock ? "first-block" : ""}`}
+          className="editor-content w-full"
           editor={editor}
         />
       </div>
