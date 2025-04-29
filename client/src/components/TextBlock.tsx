@@ -153,14 +153,14 @@ export default function TextBlock({
       // Prevent duplicate block creation
       if (isAddingBlock.current) return;
       
-      const { editorId: eventEditorId } = event.detail;
+      const { editorId: eventEditorId, forceNewBlock } = event.detail;
       
       // Only handle if this is the active editor (the one that fired the event)
       const isThisEditor = editorId === eventEditorId || editor.isFocused;
       
       if (isThisEditor) {
-        // Don't create a new block for code blocks
-        if (block.type === "code") return;
+        // Don't create a new block for code blocks - UNLESS forceNewBlock is true
+        if (block.type === "code" && !forceNewBlock) return;
         
         // Set flag to prevent multiple block creation
         isAddingBlock.current = true;
@@ -177,12 +177,59 @@ export default function TextBlock({
       }
     };
     
-    // Add event listener only on the window (to prevent duplicate triggers)
+    // Handle specific code block exit event
+    const handleCodeBlockExit = (event: CustomEvent) => {
+      const { blockId, shouldCreateNewBlock, preserveContent, originalContent } = event.detail;
+      
+      // Only handle if this is the block that sent the event
+      if (blockId === block.id && shouldCreateNewBlock) {
+        // Set flag to prevent duplicate block creation
+        isAddingBlock.current = true;
+        
+        // If we need to preserve content, update the current block's content
+        if (preserveContent && originalContent && editor) {
+          // Store original content to restore in this block
+          const storedContent = originalContent;
+          
+          // Create a new paragraph block after this one
+          addBlockAfter(block.id, "paragraph");
+          
+          // After a short delay, restore the code content
+          setTimeout(() => {
+            // Restore code content to this block
+            editor.commands.setContent("");
+            editor.commands.setCodeBlock();
+            
+            // Need to parse the HTML to extract just the content
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = storedContent;
+            const codeContent = tempDiv.textContent || "";
+            
+            editor.commands.insertContent(codeContent);
+            
+            // Reset flag
+            isAddingBlock.current = false;
+          }, 50);
+        } else {
+          // Regular behavior - create a paragraph block
+          addBlockAfter(block.id, "paragraph");
+          
+          // Reset flag after a delay
+          setTimeout(() => {
+            isAddingBlock.current = false;
+          }, 100);
+        }
+      }
+    };
+    
+    // Add event listeners
     window.addEventListener('editor-enter-key', handleEditorEnterKey as EventListener);
+    window.addEventListener('code-block-exit', handleCodeBlockExit as EventListener);
     
     // Clean up
     return () => {
       window.removeEventListener('editor-enter-key', handleEditorEnterKey as EventListener);
+      window.removeEventListener('code-block-exit', handleCodeBlockExit as EventListener);
     };
   }, [editor, block.id, block.type, addBlockAfter]);
 
@@ -392,6 +439,7 @@ export default function TextBlock({
       ref={setNodeRef}
       style={style}
       className={`relative group w-full flex ${isFirstBlock ? 'first-block' : ''} ${block.type}`}
+      data-block-id={block.id}
       {...attributes}
     >
       {/* Container for both content and format controls with fixed width */}

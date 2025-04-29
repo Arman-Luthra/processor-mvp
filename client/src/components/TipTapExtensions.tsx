@@ -96,7 +96,7 @@ const KeyboardHandler = Extension.create({
         const isDoubleEnter = now - this.storage.lastEnterTime < 500; // 500ms threshold
         this.storage.lastEnterTime = now;
         
-        // Let TipTap handle Enter inside code blocks
+        // Let TipTap handle Enter inside code blocks (adds a new line)
         if (this.editor.isActive('codeBlock')) {
           return false;
         }
@@ -156,6 +156,55 @@ const KeyboardHandler = Extension.create({
         window.dispatchEvent(event);
 
         // Prevent TipTap's default Enter behavior for regular paragraphs
+        return true;
+      },
+
+      // Handle Shift+Enter key
+      'Shift-Enter': () => {
+        // Special handling for code blocks
+        if (this.editor.isActive('codeBlock')) {
+          // Get the current editor content
+          const codeContent = this.editor.getHTML();
+          
+          // Find parent block element
+          const editorElement = this.editor.options.element;
+          if (!editorElement) return true;
+          
+          const blockElement = editorElement.closest('[data-block-id]');
+          if (!blockElement) return true;
+          
+          const blockId = blockElement.getAttribute('data-block-id');
+          if (!blockId) return true;
+          
+          // Clear the editor and set it to paragraph
+          // This creates a clean transformation without adding new lines
+          this.editor.commands.clearContent();
+          this.editor.commands.setParagraph();
+          
+          // Create a new block after this one
+          setTimeout(() => {
+            const event = new CustomEvent('code-block-exit', {
+              detail: { 
+                blockId, 
+                shouldCreateNewBlock: true,
+                preserveContent: true,  // Flag to indicate we've preserved content
+                originalContent: codeContent  // Send the original content to be restored
+              }
+            });
+            window.dispatchEvent(event);
+          }, 10);
+          
+          return true;
+        }
+        
+        // For other blocks, treat Shift+Enter as a regular Enter to create a new block
+        const event = new CustomEvent('editor-enter-key', {
+          detail: {
+            editorId: this.editor.options.element?.id,
+            isEmpty: this.editor.isEmpty
+          }
+        });
+        window.dispatchEvent(event);
         return true;
       },
     };
