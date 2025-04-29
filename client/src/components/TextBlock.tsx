@@ -627,6 +627,7 @@ export default function TextBlock({
   const handleDropdownChange = (v: string) => {
     updateBlock(block.id, { language: v });
     if (editor) {
+      editor.commands.updateAttributes('codeBlock', { language: v });
       setTimeout(() => {
         editor.commands.focus();
       }, 50);

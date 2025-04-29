@@ -4,9 +4,42 @@ import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Superscript from "@tiptap/extension-superscript";
 import Subscript from "@tiptap/extension-subscript";
-import CodeBlock from "@tiptap/extension-code-block";
 import { Extension } from "@tiptap/core";
 import { Node } from "@tiptap/core";
+import { createLowlight } from "lowlight";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import python from "highlight.js/lib/languages/python";
+import javascript from "highlight.js/lib/languages/javascript";
+import typescript from "highlight.js/lib/languages/typescript";
+import java from "highlight.js/lib/languages/java";
+import c from "highlight.js/lib/languages/c";
+import cpp from "highlight.js/lib/languages/cpp";
+import go from "highlight.js/lib/languages/go";
+import ruby from "highlight.js/lib/languages/ruby";
+import rust from "highlight.js/lib/languages/rust";
+import php from "highlight.js/lib/languages/php";
+import markdown from "highlight.js/lib/languages/markdown";
+import json from "highlight.js/lib/languages/json";
+import html from "highlight.js/lib/languages/xml";
+import css from "highlight.js/lib/languages/css";
+import shell from "highlight.js/lib/languages/shell";
+
+const lowlight = createLowlight();
+lowlight.register({ python });
+lowlight.register({ javascript });
+lowlight.register({ typescript });
+lowlight.register({ java });
+lowlight.register({ c });
+lowlight.register({ cpp });
+lowlight.register({ go });
+lowlight.register({ ruby });
+lowlight.register({ rust });
+lowlight.register({ php });
+lowlight.register({ markdown });
+lowlight.register({ json });
+lowlight.register({ html });
+lowlight.register({ css });
+lowlight.register({ shell });
 
 // Custom extension to handle placeholder visibility properly
 const CustomPlaceholder = Placeholder.configure({
@@ -336,7 +369,8 @@ export const TipTapExtensions = [
   }),
   CustomSuperscript,
   CustomSubscript,
-  CodeBlock.configure({
+  CodeBlockLowlight.configure({
+    lowlight,
     HTMLAttributes: {
       class: "code-block font-mono bg-[#F7F6F3] p-3 rounded-md",
     },
