@@ -2,12 +2,14 @@ import { Block } from "@shared/schema";
 import { nanoid } from "nanoid";
 
 // Create a new block
-export function createBlock(type: Block["type"] = "paragraph", content: string = ""): Block {
-  return {
+export function createBlock(type: Block["type"] = "paragraph", content: string = "", language?: string): Block {
+  const block: Block = {
     id: nanoid(),
     type,
     content,
   };
+  if (language) block.language = language;
+  return block;
 }
 
 // Count words in a string

@@ -59,6 +59,7 @@ export const blockSchema = z.object({
     "dashedList"
   ]),
   content: z.string(),
+  language: z.string().optional(),
 });
 
 export type Block = z.infer<typeof blockSchema>;
