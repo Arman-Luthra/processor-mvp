@@ -111,7 +111,7 @@
 
 /* Simple hover effect strictly limited to editor content */
 .editor-content:hover {
-  background-color: rgba(59, 130, 246, 0.05);
+  background-color: rgba(59, 130, 246, 0.05) !important;
 }
 
 /* Drag state styling for editor content */
@@ -150,7 +150,7 @@ body, html, #root, #__next,
   100% { background-color: transparent; }
 }
 
-/* Focus animation for the editor container to ensure same shape as hover */
+/* Focus animation for the editor container */
 .editor-content:has(.ProseMirror:focus) {
   animation: highlight-block 1s ease forwards;
 }
