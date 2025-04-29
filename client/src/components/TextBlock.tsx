@@ -4,7 +4,8 @@ import FormatDropdown from "@/components/FormatDropdown";
 import SelectionMenu from "@/components/SelectionMenu";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { TipTapExtensions } from "@/components/TipTapExtensions";
-import { MoreVertical } from "lucide-react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TextBlockProps {
   block: Block;
@@ -14,6 +15,8 @@ interface TextBlockProps {
   registerBlockRef?: (blockId: string, element: HTMLElement | null) => void;
   shouldFocus?: boolean;
   isFirstBlock?: boolean;
+  isLastBlock?: boolean;
+  isDragging?: boolean;
 }
 
 export default function TextBlock({
@@ -24,13 +27,37 @@ export default function TextBlock({
   registerBlockRef,
   shouldFocus = false,
   isFirstBlock = false,
+  isLastBlock = false,
+  isDragging = false,
 }: TextBlockProps) {
   const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [showSelectionMenu, setShowSelectionMenu] = useState(false);
   const [selectionPosition, setSelectionPosition] = useState({ top: 0, left: 0 });
   const [selectedText, setSelectedText] = useState("");
-  const blockRef = useRef<HTMLDivElement>(null);
-  const formatMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const formatMenuButtonRef = useRef<HTMLDivElement>(null);
+
+  // Initialize dnd-kit sortable
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging: isSorting,
+  } = useSortable({
+    id: block.id,
+    transition: {
+      duration: 200,
+      easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+    },
+  });
+
+  // Apply dnd-kit styles
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging || isSorting ? 0.5 : 1,
+  };
 
   // Initialize TipTap editor
   const editor = useEditor({
@@ -88,11 +115,11 @@ export default function TextBlock({
   
   // Register block reference with parent
   useEffect(() => {
-    if (registerBlockRef && blockRef.current) {
-      registerBlockRef(block.id, blockRef.current);
+    if (registerBlockRef) {
+      registerBlockRef(block.id, setNodeRef);
       return () => registerBlockRef(block.id, null);
     }
-  }, [block.id, registerBlockRef]);
+  }, [block.id, registerBlockRef, setNodeRef]);
   
   // Auto focus this block if shouldFocus is true
   useEffect(() => {
@@ -197,56 +224,96 @@ export default function TextBlock({
 
   // Apply formatting to block
   const handleFormatSelect = (type: Block["type"]) => {
-    // First clear all existing formats by returning to a plain paragraph
-    const clearAllFormats = () => {
-      // Use TipTap's built-in lift functionality to clear everything at once
-      editor?.chain().focus().clearNodes().unsetAllMarks().run();
-      
-      // Ensure we're starting fresh with a paragraph
-      editor?.chain().focus().setParagraph().run();
-    };
-
+    if (!editor) return;
+    
+    // Extract current content text before clearing formatting
+    // Trim the text to remove extra whitespace
+    const currentText = editor.getText().trim();
+    
+    // Completely reset the editor content
+    editor.commands.clearContent(true);
+    
     // Update block type in the state
     updateBlock(block.id, { type });
     setShowFormatMenu(false);
 
-    // Apply proper formatting using TipTap's commands
-    if (editor) {
-      // First clear any existing formats
-      clearAllFormats();
-
-      // Then apply the new format
-      switch (type) {
-        case "title":
-        case "heading1":
-          editor.chain().focus().setHeading({ level: 1 }).run();
-          break;
-        case "heading2":
-          editor.chain().focus().setHeading({ level: 2 }).run();
-          break;
-        case "heading3":
-          editor.chain().focus().setHeading({ level: 3 }).run();
-          break;
-        case "bulletList":
-          editor.chain().focus().toggleBulletList().run();
-          break;
-        case "orderedList":
-          editor.chain().focus().toggleOrderedList().run();
-          break;
-        case "code":
-          editor.chain().focus().toggleCodeBlock().run();
-          break;
-        case "paragraph":
-        default:
-          editor.chain().focus().setParagraph().run();
-          break;
-      }
-      
-      // Focus the editor after changing format
-      setTimeout(() => {
-        editor.commands.focus('end');
-      }, 10);
+    // Apply the new format with the extracted text
+    switch (type) {
+      case "title":
+      case "heading1":
+        editor.chain().focus().setHeading({ level: 1 }).run();
+        if (currentText) editor.chain().insertContent(currentText).run();
+        break;
+      case "heading2":
+        editor.chain().focus().setHeading({ level: 2 }).run();
+        if (currentText) editor.chain().insertContent(currentText).run();
+        break;
+      case "heading3":
+        editor.chain().focus().setHeading({ level: 3 }).run();
+        if (currentText) editor.chain().insertContent(currentText).run();
+        break;
+      case "bulletList":
+        // For lists, we need to create the structure and then insert the text
+        editor.chain().focus().run();
+        if (currentText) {
+          editor.commands.insertContent({
+            type: 'bulletList',
+            content: [{
+              type: 'listItem',
+              content: [{
+                type: 'paragraph',
+                content: currentText ? [{ type: 'text', text: currentText }] : []
+              }]
+            }]
+          });
+        } else {
+          editor.commands.insertContent({
+            type: 'bulletList',
+            content: [{
+              type: 'listItem',
+              content: [{ type: 'paragraph' }]
+            }]
+          });
+        }
+        break;
+      case "orderedList":
+        editor.chain().focus().run();
+        if (currentText) {
+          editor.commands.insertContent({
+            type: 'orderedList',
+            content: [{
+              type: 'listItem',
+              content: [{
+                type: 'paragraph',
+                content: currentText ? [{ type: 'text', text: currentText }] : []
+              }]
+            }]
+          });
+        } else {
+          editor.commands.insertContent({
+            type: 'orderedList',
+            content: [{
+              type: 'listItem',
+              content: [{ type: 'paragraph' }]
+            }]
+          });
+        }
+        break;
+      case "code":
+        editor.chain().focus().setCodeBlock().run();
+        if (currentText) editor.chain().insertContent(currentText).run();
+        break;
+      case "paragraph":
+      default:
+        editor.chain().focus().setParagraph().run();
+        if (currentText) editor.chain().insertContent(currentText).run();
+        break;
     }
+    
+    // Focus the editor after changing format
+    setTimeout(() => {
+      editor.commands.focus('end');
+    }, 10);
   };
 
   // Add a direct DOM manipulation to force the placeholder visibility
@@ -262,6 +329,29 @@ export default function TextBlock({
       }
     }
   }, [editor, isFirstBlock]);
+
+  // Helper to get block type name for display
+  const getBlockTypeName = (type: Block["type"]) => {
+    switch (type) {
+      case "title":
+        return "Title";
+      case "heading1":
+        return "Heading 1";
+      case "heading2":
+        return "Heading 2";
+      case "heading3":
+        return "Heading 3";
+      case "bulletList":
+        return "Bullet List";
+      case "orderedList":
+        return "Numbered List";
+      case "code":
+        return "Code";
+      case "paragraph":
+      default:
+        return "Text";
+    }
+  };
 
   // Helper to get block class based on type
   const getBlockClass = (type: Block["type"]) => {
@@ -292,32 +382,19 @@ export default function TextBlock({
 
   return (
     <div
-      ref={blockRef}
-      className={`relative group w-full ${isFirstBlock ? 'first-block' : ''}`}
+      ref={setNodeRef}
+      style={style}
+      className={`relative group w-full flex ${isFirstBlock ? 'first-block' : ''}`}
       onClick={() => {
         if (editor && !editor.isFocused) {
           editor.commands.focus();
         }
       }}
+      {...attributes}
     >
-      {/* Format menu button (appears on hover) */}
-      <div className="absolute left-0 -ml-8 top-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          ref={formatMenuButtonRef}
-          className="w-6 h-6 flex items-center justify-center rounded hover:bg-[#F7F6F3] text-gray-400 hover:text-gray-700"
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleFormatMenu();
-          }}
-          aria-label="Format options"
-        >
-          <MoreVertical size={16} />
-        </button>
-      </div>
-
       {/* Editable content area */}
       <div
-        className={`w-full py-1 focus:outline-none ${getBlockClass(block.type)} ${block.type}`}
+        className={`flex-grow py-1 focus:outline-none ${getBlockClass(block.type)} ${block.type}`}
         onKeyDown={handleKeyDown}
         data-block-id={block.id}
       >
@@ -325,6 +402,27 @@ export default function TextBlock({
           className="editor-content w-full"
           editor={editor}
         />
+      </div>
+
+      {/* Format and drag control (always visible) */}
+      <div className="flex items-start ml-2 min-w-[120px]">
+        <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group" ref={formatMenuButtonRef}>
+          {/* Drag handle (2x3 dots) */}
+          <div 
+            className="mr-2 grid grid-rows-3 grid-cols-2 gap-0.5 cursor-grab active:cursor-grabbing drag-handle"
+            {...listeners}
+          >
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="w-1 h-1 rounded-full bg-gray-400"></div>
+            ))}
+          </div>
+          
+          {/* Format name */}
+          <span onClick={(e) => {
+            e.stopPropagation();
+            toggleFormatMenu();
+          }}>{getBlockTypeName(block.type)}</span>
+        </div>
       </div>
 
       {/* Format dropdown menu */}

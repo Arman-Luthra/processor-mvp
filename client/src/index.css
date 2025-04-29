@@ -67,6 +67,21 @@
   cursor: text;
 }
 
+/* Drag and drop styles */
+[data-dnd-draggable] {
+  /* Allow translations using CSS variables but prevent scaling */
+  transform: translate3d(var(--translate-x, 0), var(--translate-y, 0), 0) scale(1) !important;
+  /* Prevent width/height changes during drag */
+  width: var(--original-width, 100%) !important;
+  height: var(--original-height, auto) !important;
+  transform-origin: 0 0 !important;
+}
+
+/* Add proper transition for draggable elements */
+.sortable-item {
+  transition: transform 200ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+
 /* Make entire editor clickable by removing any float/positioning that might interfere */
 .editor-content {
   width: 100%;
@@ -94,6 +109,41 @@
   content: attr(data-placeholder);
   color: #adb5bd;
   pointer-events: none;
+}
+
+/* Drag and drop indicators */
+.drag-over-top {
+  box-shadow: 0 -2px 0 0 #3b82f6;
+  position: relative;
+  z-index: 10;
+}
+
+.drag-over-bottom {
+  box-shadow: 0 2px 0 0 #3b82f6;
+  position: relative;
+  z-index: 10;
+}
+
+/* Drag handle styles */
+.drag-handle {
+  cursor: grab;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Reset all list styling that might be inherited by headings */
+.ProseMirror h1, .ProseMirror h2, .ProseMirror h3 {
+  list-style: none !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* Ensure headings don't have bullet points */
+.ProseMirror h1::before, .ProseMirror h2::before, .ProseMirror h3::before {
+  content: none !important;
+  display: none !important;
 }
 
 /* Bullet lists */

@@ -9,7 +9,7 @@ import {
 interface FormatDropdownProps {
   onSelect: (type: Block["type"]) => void;
   onClose: () => void;
-  buttonRef: React.RefObject<HTMLButtonElement>;
+  buttonRef: React.RefObject<HTMLDivElement>;
 }
 
 export default function FormatDropdown({
@@ -38,10 +38,10 @@ export default function FormatDropdown({
       const rect = buttonRef.current.getBoundingClientRect();
       const dropdownWidth = 160;
       
-      // Position to the left of the content with some padding
+      // Position to the right of the format button
       setPosition({
-        top: rect.top,
-        left: rect.left - dropdownWidth - 5,
+        top: rect.top + rect.height,
+        left: rect.left,
       });
     }
   }, [buttonRef]);
