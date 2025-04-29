@@ -385,43 +385,46 @@ export default function TextBlock({
       ref={setNodeRef}
       style={style}
       className={`relative group w-full flex ${isFirstBlock ? 'first-block' : ''}`}
-      onClick={() => {
-        if (editor && !editor.isFocused) {
-          editor.commands.focus();
-        }
-      }}
       {...attributes}
     >
-      {/* Editable content area */}
-      <div
-        className={`flex-grow py-1 focus:outline-none ${getBlockClass(block.type)} ${block.type}`}
-        onKeyDown={handleKeyDown}
-        data-block-id={block.id}
-      >
-        <EditorContent 
-          className="editor-content w-full"
-          editor={editor}
-        />
-      </div>
+      {/* Container for both content and format controls with fixed width */}
+      <div className="w-full flex relative">
+        {/* Editable content area with explicit width and its own click handler */}
+        <div
+          className={`w-[calc(100%-100px)] py-1 focus:outline-none ${getBlockClass(block.type)} ${block.type}`}
+          onKeyDown={handleKeyDown}
+          data-block-id={block.id}
+          onClick={() => {
+            if (editor && !editor.isFocused) {
+              editor.commands.focus();
+            }
+          }}
+        >
+          <EditorContent 
+            className="editor-content w-full"
+            editor={editor}
+          />
+        </div>
 
-      {/* Format and drag control (always visible) */}
-      <div className="flex items-start ml-2 min-w-[120px]">
-        <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group" ref={formatMenuButtonRef}>
-          {/* Drag handle (2x3 dots) */}
-          <div 
-            className="mr-2 grid grid-rows-3 grid-cols-2 gap-0.5 cursor-grab active:cursor-grabbing drag-handle"
-            {...listeners}
-          >
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="w-1 h-1 rounded-full bg-gray-400"></div>
-            ))}
+        {/* Format and drag control - fixed position and width */}
+        <div className="w-[100px] flex justify-start items-start pl-2">
+          <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group" ref={formatMenuButtonRef}>
+            {/* Drag handle (2x3 dots) */}
+            <div 
+              className="mr-2 grid grid-rows-3 grid-cols-2 gap-0.5 cursor-grab active:cursor-grabbing drag-handle"
+              {...listeners}
+            >
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="w-1 h-1 rounded-full bg-gray-400"></div>
+              ))}
+            </div>
+            
+            {/* Format name */}
+            <span onClick={(e) => {
+              e.stopPropagation();
+              toggleFormatMenu();
+            }}>{getBlockTypeName(block.type)}</span>
           </div>
-          
-          {/* Format name */}
-          <span onClick={(e) => {
-            e.stopPropagation();
-            toggleFormatMenu();
-          }}>{getBlockTypeName(block.type)}</span>
         </div>
       </div>
 

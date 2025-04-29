@@ -64,26 +64,54 @@
   min-height: 30px;
   padding: 4px 0;
   width: 100%;
+  max-width: 100%;
   cursor: text;
-  white-space: pre-wrap; /* Ensure line breaks work properly */
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 /* Make sure paragraphs have proper spacing */
 .ProseMirror p {
   margin: 0;
   min-height: 1.5em;
+  max-width: 100%;
+  word-wrap: break-word;
+  word-break: break-all; /* Force breaks anywhere */
+}
+
+/* Force proper line wrapping in all text nodes */
+.ProseMirror * {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-all; /* Force breaks for all content */
+  max-width: 100%;
+}
+
+/* Handle long words and text strings better */
+.ProseMirror span, .ProseMirror a {
+  word-break: break-all;
+  overflow-wrap: break-word;
+  display: inline-block;
+  max-width: 100%;
 }
 
 /* Block hover and active state styles */
 .editor-content {
   position: relative;
-  border-radius: 0.25rem;
+  border-radius: 0.75rem;
   transition: background-color 0.3s ease;
+  width: 100%;
+  cursor: text;
+  padding: 0.25rem 0.75rem; /* Reduced horizontal padding */
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent overflow */
 }
 
-/* Add blue background on hover */
+/* Simple hover effect strictly limited to editor content */
 .editor-content:hover {
-  background-color: rgba(59, 130, 246, 0.05); /* Very light blue */
+  background-color: rgba(59, 130, 246, 0.05);
 }
 
 /* Add animation when the editor receives focus */
@@ -92,14 +120,45 @@
   100% { background-color: transparent; }
 }
 
-.ProseMirror:focus {
+/* Focus animation for the editor container to ensure same shape as hover */
+.editor-content:has(.ProseMirror:focus) {
   animation: highlight-block 1s ease forwards;
+}
+
+/* Remove default focus styling */
+.ProseMirror:focus {
   outline: none;
 }
 
-/* Make sure the animation layer doesn't interfere with editing */
-.ProseMirror:focus::after {
-  pointer-events: none;
+/* Set exact width for text container to prevent overflow */
+.w-\[calc\(100\%-100px\)\] {
+  width: calc(100% - 100px);
+  max-width: calc(100% - 100px);
+  overflow: hidden;
+}
+
+/* Ensure format controls are aligned consistently */
+.w-\[100px\] {
+  width: 100px;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+/* Ensure padding is applied consistently */
+.w-\[100px\].flex.justify-start {
+  padding-left: 8px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* Code blocks specific styling - restore original */
+.ProseMirror pre {
+  background-color: #f7f6f3;
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  font-family: monospace;
+  font-size: 0.875rem;
+  overflow-x: auto;
 }
 
 /* Drag and drop styles */
@@ -115,12 +174,6 @@
 /* Add proper transition for draggable elements */
 .sortable-item {
   transition: transform 200ms cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-/* Make entire editor clickable by removing any float/positioning that might interfere */
-.editor-content {
-  width: 100%;
-  cursor: text;
 }
 
 /* Hide placeholder on all blocks by default */
@@ -253,16 +306,6 @@
 
 .ordered-list {
   margin-left: 0 !important;
-}
-
-/* Code blocks */
-.ProseMirror pre {
-  background-color: #f7f6f3;
-  border-radius: 0.25rem;
-  padding: 0.75rem;
-  font-family: monospace;
-  font-size: 0.875rem;
-  overflow-x: auto;
 }
 
 /* Custom placeholder styling is handled by TipTap's placeholder extension */
