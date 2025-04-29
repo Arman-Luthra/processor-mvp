@@ -54,10 +54,17 @@ export default function TextBlock({
 
   // Apply dnd-kit styles
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: isDragging || isSorting 
+      ? `translate3d(${transform?.x || 0}px, ${transform?.y || 0}px, 0) scale(1.02) rotate(1deg)` 
+      : CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging || isSorting ? 0.5 : 1,
-  };
+    boxShadow: isDragging || isSorting ? '0 15px 35px rgba(0, 0, 0, 0.2)' : 'none',
+    zIndex: isDragging || isSorting ? 50 : 'auto',
+    opacity: 1,
+    borderRadius: isDragging || isSorting ? '0.5rem' : '0',
+    padding: isDragging || isSorting ? '4px' : '0',
+    backgroundColor: isDragging || isSorting ? 'white' : 'transparent',
+  } as React.CSSProperties;
 
   // Initialize TipTap editor
   const editor = useEditor({

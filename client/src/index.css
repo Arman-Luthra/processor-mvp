@@ -106,12 +106,42 @@
   cursor: text;
   padding: 0.25rem 0.75rem; /* Reduced horizontal padding */
   box-sizing: border-box;
-  overflow: hidden; /* Prevent overflow */
+  overflow: visible; /* Allow overflow to show shadows */
 }
 
 /* Simple hover effect strictly limited to editor content */
 .editor-content:hover {
   background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Drag state styling for editor content */
+.editor-content.dragging {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Remove all the shadow-related pseudo elements as we're using a different approach */
+.editor-content.dragging::after {
+  display: none;
+}
+
+/* More targeted overflow handling */
+.sortable-item {
+  position: relative;
+  z-index: 1;
+}
+
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* More aggressive approach to overflow handling */
+body, html, #root, #__next,
+.min-h-screen, .w-full, .max-w-\[740px\],
+.sortable-item, .space-y-3,
+.w-\[calc\(100\%-100px\)\],
+.ProseMirror, .editor-content,
+.flex, .relative, .group {
+  overflow: visible !important;
 }
 
 /* Add animation when the editor receives focus */
@@ -202,9 +232,9 @@
   transform-origin: 0 0 !important;
 }
 
-/* Add proper transition for draggable elements */
+/* Transition for draggable elements */
 .sortable-item {
-  transition: transform 200ms cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 200ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 200ms ease;
 }
 
 /* Hide placeholder on all blocks by default */
@@ -246,10 +276,17 @@
 /* Drag handle styles */
 .drag-handle {
   cursor: grab;
+  transition: transform 100ms ease;
 }
 
 .drag-handle:active {
+  transform: scale(0.95);
   cursor: grabbing;
+}
+
+/* Enhance drag handle visual */
+.drag-handle:hover div {
+  background-color: #6b7280;
 }
 
 /* Reset all list styling that might be inherited by headings */
