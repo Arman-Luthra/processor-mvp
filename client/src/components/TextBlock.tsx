@@ -634,7 +634,7 @@ export default function TextBlock({
               />
             </div>
             {showMenu && (
-              <div className="w-[160px] flex flex-col justify-start items-start pl-2">
+              <div className="w-[160px] flex flex-col justify-start items-start pl-2 animate-fade-in">
                 <div className="flex flex-nowrap items-center justify-start py-1 px-3 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group w-full" ref={formatMenuButtonRef}>
                   <div 
                     className="min-w-[8px] grid grid-rows-3 grid-cols-2 gap-px cursor-grab active:cursor-grabbing drag-handle"
