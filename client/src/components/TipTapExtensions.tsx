@@ -55,40 +55,6 @@ const KeyboardHandler = Extension.create({
         return false;
       },
       
-      // Handle backspace in empty block
-      Backspace: () => {
-        const isAtStart = this.editor.state.selection.from === 1;
-        const isEmpty = this.editor.isEmpty;
-        const isFirstBlock = this.editor.options.element?.parentElement?.classList.contains('first-block');
-        
-        if (isEmpty) {
-          if (isFirstBlock) {
-            // Focus title if in first block
-            const event = new CustomEvent('focus-title', {});
-            window.dispatchEvent(event);
-            return true;
-          } else {
-            // Delete current block and move to previous
-            const event = new CustomEvent('block-delete-backward', {
-              detail: {
-                blockId: this.editor.options.element?.id
-              }
-            });
-            window.dispatchEvent(event);
-            return true;
-          }
-        }
-        
-        if (isFirstBlock && isAtStart) {
-          // Focus title when at start of first block
-          const event = new CustomEvent('focus-title', {});
-          window.dispatchEvent(event);
-          return true;
-        }
-        
-        return false;
-      },
-
       // Handle Enter key
       Enter: () => {
         // Track time for double-enter detection
@@ -96,8 +62,9 @@ const KeyboardHandler = Extension.create({
         const isDoubleEnter = now - this.storage.lastEnterTime < 500; // 500ms threshold
         this.storage.lastEnterTime = now;
         
-        // Let TipTap handle Enter inside code blocks (adds a new line)
+        // Special handling for code blocks
         if (this.editor.isActive('codeBlock')) {
+          // Always let TipTap handle Enter in code blocks for new lines
           return false;
         }
         
@@ -159,6 +126,81 @@ const KeyboardHandler = Extension.create({
         return true;
       },
 
+      // Handle Backspace key
+      Backspace: () => {
+        const isAtStart = this.editor.state.selection.from === 1;
+        const isEmpty = this.editor.isEmpty;
+        const isFirstBlock = this.editor.options.element?.parentElement?.classList.contains('first-block');
+        
+        // Special handling for code blocks
+        if (this.editor.isActive('codeBlock')) {
+          // If at start of code block and empty, exit to paragraph
+          if (isAtStart && isEmpty) {
+            // Get the current editor content
+            const codeContent = this.editor.getHTML();
+            
+            // Find parent block element
+            const editorElement = this.editor.options.element;
+            if (!editorElement) return true;
+            
+            const blockElement = editorElement.closest('[data-block-id]');
+            if (!blockElement) return true;
+            
+            const blockId = blockElement.getAttribute('data-block-id');
+            if (!blockId) return true;
+            
+            // Clear the editor and set it to paragraph
+            this.editor.commands.clearContent();
+            this.editor.commands.setParagraph();
+            
+            // Create a new block after this one
+            setTimeout(() => {
+              const event = new CustomEvent('code-block-exit', {
+                detail: { 
+                  blockId, 
+                  shouldCreateNewBlock: true,
+                  preserveContent: true,
+                  originalContent: codeContent
+                }
+              });
+              window.dispatchEvent(event);
+            }, 10);
+            
+            return true;
+          }
+          
+          // Let TipTap handle normal backspace in code blocks
+          return false;
+        }
+        
+        if (isEmpty) {
+          if (isFirstBlock) {
+            // Focus title if in first block
+            const event = new CustomEvent('focus-title', {});
+            window.dispatchEvent(event);
+            return true;
+          } else {
+            // Delete current block and move to previous
+            const event = new CustomEvent('block-delete-backward', {
+              detail: {
+                blockId: this.editor.options.element?.id
+              }
+            });
+            window.dispatchEvent(event);
+            return true;
+          }
+        }
+        
+        if (isFirstBlock && isAtStart) {
+          // Focus title when at start of first block
+          const event = new CustomEvent('focus-title', {});
+          window.dispatchEvent(event);
+          return true;
+        }
+        
+        return false;
+      },
+
       // Handle Shift+Enter key
       'Shift-Enter': () => {
         // Special handling for code blocks
@@ -168,16 +210,15 @@ const KeyboardHandler = Extension.create({
           
           // Find parent block element
           const editorElement = this.editor.options.element;
-          if (!editorElement) return true;
+          if (!editorElement) return false;
           
           const blockElement = editorElement.closest('[data-block-id]');
-          if (!blockElement) return true;
+          if (!blockElement) return false;
           
           const blockId = blockElement.getAttribute('data-block-id');
-          if (!blockId) return true;
+          if (!blockId) return false;
           
           // Clear the editor and set it to paragraph
-          // This creates a clean transformation without adding new lines
           this.editor.commands.clearContent();
           this.editor.commands.setParagraph();
           
@@ -187,8 +228,8 @@ const KeyboardHandler = Extension.create({
               detail: { 
                 blockId, 
                 shouldCreateNewBlock: true,
-                preserveContent: true,  // Flag to indicate we've preserved content
-                originalContent: codeContent  // Send the original content to be restored
+                preserveContent: true,
+                originalContent: codeContent
               }
             });
             window.dispatchEvent(event);
@@ -275,6 +316,7 @@ export const TipTapExtensions = [
     HTMLAttributes: {
       class: "code-block font-mono bg-[#F7F6F3] p-3 rounded-md",
     },
+    exitOnTripleEnter: false,
   }),
   CustomPlaceholder,
   KeyboardHandler,
