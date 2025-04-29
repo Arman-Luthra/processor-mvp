@@ -292,6 +292,21 @@ export default function NotionEditor({
     };
   }, [blocks, focusBlockById, deleteBlock]);
 
+  useEffect(() => {
+    const handleKeydown = () => {
+      document.body.classList.add('suppress-block-hover');
+    };
+    const handleMousemove = () => {
+      document.body.classList.remove('suppress-block-hover');
+    };
+    window.addEventListener('keydown', handleKeydown);
+    window.addEventListener('mousemove', handleMousemove);
+    return () => {
+      window.removeEventListener('keydown', handleKeydown);
+      window.removeEventListener('mousemove', handleMousemove);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex justify-center">
       <div className="w-full max-w-[740px] px-4 py-10 md:py-20">

@@ -473,3 +473,7 @@ body, html, #root, #__next,
 
 /* Custom placeholder styling is handled by TipTap's placeholder extension */
 
+body.suppress-block-hover .editor-content:hover {
+  background-color: transparent !important;
+}
+
