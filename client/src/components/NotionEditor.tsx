@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Dispatch, SetStateAction } from "react";
 import DocumentTitle from "@/components/DocumentTitle";
 import TextBlock from "@/components/TextBlock";
 import { useAutoSave } from "@/lib/useAutoSave";
@@ -7,6 +7,7 @@ import { Block } from "@shared/schema";
 import { DndContext, DragEndEvent, DragStartEvent, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { ActiveBlockProvider } from './ActiveBlockContext';
+import { FileText, Image as ImageIcon, Sigma, Table } from "lucide-react";
 
 interface NotionEditorProps {
   initialTitle: string;
@@ -349,28 +350,7 @@ export default function NotionEditor({
                 ))}
                 
                 {/* Add block button at the end */}
-                <div 
-                  className="flex items-center cursor-pointer opacity-30 hover:opacity-100 transition-opacity my-2"
-                  onClick={() => {
-                    // Add a new paragraph block at the end
-                    const lastBlockId = blocks.length > 0 ? blocks[blocks.length - 1].id : null;
-                    if (lastBlockId) {
-                      addBlockAfter(lastBlockId, 'paragraph');
-                    } else {
-                      // If no blocks, create the first one
-                      const newBlockId = nanoid();
-                      setBlocks([{
-                        id: newBlockId,
-                        type: "paragraph",
-                        content: "<p></p>",
-                      }]);
-                      setLastCreatedBlockId(newBlockId);
-                    }
-                  }}
-                >
-                  <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center text-gray-500 hover:bg-gray-100">+</div>
-                  <span className="ml-2 text-sm text-gray-500">Add a block</span>
-                </div>
+                <AddBlockMenu addBlockAfter={addBlockAfter} blocks={blocks} setBlocks={setBlocks} setLastCreatedBlockId={setLastCreatedBlockId} />
               </div>
             </SortableContext>
           </DndContext>
@@ -382,5 +362,45 @@ export default function NotionEditor({
         </div>
       </div>
     </ActiveBlockProvider>
+  );
+}
+
+function AddBlockMenu({ addBlockAfter, blocks, setBlocks, setLastCreatedBlockId }: {
+  addBlockAfter: (blockId: string, blockType?: Block["type"]) => void,
+  blocks: Block[],
+  setBlocks: Dispatch<SetStateAction<Block[]>>,
+  setLastCreatedBlockId: Dispatch<SetStateAction<string | null>>
+}) {
+  const [open, setOpen] = useState(false);
+  const handleAddText = () => {
+    if (blocks.length > 0) {
+      addBlockAfter(blocks[blocks.length - 1].id, "paragraph");
+    }
+    setOpen(false);
+  };
+  return (
+    <div className="relative flex items-center my-2">
+      <button
+        className="flex items-center px-3 py-1.5 rounded-xl hover:bg-[#F7F6F3] border border-gray-200 bg-gray-50 text-gray-500 text-sm group select-none focus:outline-none focus:ring-2 focus:ring-blue-200"
+        style={{ minHeight: 32, width: 'auto' }}
+        onClick={() => setOpen((v) => !v)}
+        tabIndex={0}
+        aria-label="add block"
+        type="button"
+      >
+        <span className="w-5 h-5 flex items-center justify-center mr-2 text-gray-500" style={{ fontSize: 20, marginTop: -2 }}>+</span>
+        <span className="whitespace-nowrap select-none">Add a block</span>
+      </button>
+      {open && (
+        <div className="absolute right-full bottom-0 mb-0 mr-2 z-20 bg-white border border-gray-200 rounded shadow-md w-40 animate-fade-in">
+          <div className="flex flex-col">
+            <button className="flex items-center px-4 py-2 text-left hover:bg-gray-100 text-sm" tabIndex={0} type="button" onClick={handleAddText}><FileText size={18} className="mr-2" />Text</button>
+            <button className="flex items-center px-4 py-2 text-left hover:bg-gray-100 text-sm" tabIndex={0} type="button" onClick={() => setOpen(false)}><ImageIcon size={18} className="mr-2" />Image</button>
+            <button className="flex items-center px-4 py-2 text-left hover:bg-gray-100 text-sm" tabIndex={0} type="button" onClick={() => setOpen(false)}><Sigma size={18} className="mr-2" />Math</button>
+            <button className="flex items-center px-4 py-2 text-left hover:bg-gray-100 text-sm" tabIndex={0} type="button" onClick={() => setOpen(false)}><Table size={18} className="mr-2" />Table</button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
