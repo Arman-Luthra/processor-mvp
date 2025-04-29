@@ -70,6 +70,7 @@
   word-break: break-all;
   overflow-wrap: break-word;
   hyphens: auto;
+  margin-top: 0; /* Ensure no top margin */
 }
 
 /* Make sure paragraphs have proper spacing */
@@ -107,16 +108,85 @@
   padding: 0.25rem 0.75rem; /* Reduced horizontal padding */
   box-sizing: border-box;
   overflow: visible; /* Allow overflow to show shadows */
+  margin-top: 0; /* Ensure no top margin */
 }
 
 /* Simple hover effect strictly limited to editor content */
-.editor-content:hover {
+.editor-content:hover:not(:has(.ProseMirror:focus)) {
   background-color: rgba(59, 130, 246, 0.05) !important;
 }
 
 /* Drag state styling for editor content */
 .editor-content.dragging {
   background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Custom style for block when dragging */
+.dragging-block .w-\[120px\] {
+  width: 120px !important; /* Force the width to remain fixed */
+  min-width: 120px !important;
+  padding-left: 2px !important;
+}
+
+/* Ensure flex-basis is also fixed */
+.dragging-block .w-\[calc\(100\%-120px\)\] {
+  width: calc(100% - 120px) !important;
+  flex-basis: calc(100% - 120px) !important;
+}
+
+/* Make format menu more compact when dragging */
+.dragging-block .flex.items-start.py-1.px-2 {
+  padding: 2px !important;
+}
+
+/* Prevent flex container from adjusting based on content */
+.dragging-block .w-full.flex.relative {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Special wrapper for dragging that limits width to content */
+.dragging-wrapper {
+  width: fit-content !important;
+  max-width: fit-content !important;
+  overflow: visible !important;
+}
+
+/* Create custom background for dragging blocks */
+.dragging-block {
+  position: relative !important;
+}
+
+/* Custom background using pseudo-element */
+.dragging-block::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: calc(100% - 40px); /* Less reduction for better fit around content */
+  height: calc(100% + 8px);
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  z-index: -1;
+}
+
+/* For block types with longer text, adjust width */
+.dragging-block.heading2::before,
+.dragging-block.heading3::before,
+.dragging-block.bulletList::before,
+.dragging-block.orderedList::before {
+  width: calc(100% - 20px); /* Less reduction for longer text types */
+}
+
+/* Preserve original content layout */
+.dragging-block .editor-content {
+  background-color: transparent !important;
+}
+
+/* Hide background when dragging */
+.dragging-block:hover .editor-content {
+  background-color: transparent !important;
 }
 
 /* Remove all the shadow-related pseudo elements as we're using a different approach */
@@ -167,6 +237,13 @@ body, html, #root, #__next,
   overflow: hidden;
 }
 
+/* Updated width for text container */
+.w-\[calc\(100\%-120px\)\] {
+  width: calc(100% - 120px);
+  max-width: calc(100% - 120px);
+  overflow: hidden;
+}
+
 /* Ensure format controls are aligned consistently */
 .w-\[100px\] {
   width: 100px;
@@ -174,8 +251,22 @@ body, html, #root, #__next,
   flex-shrink: 0;
 }
 
+/* Updated format controls width */
+.w-\[120px\] {
+  width: 120px;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
 /* Ensure padding is applied consistently */
 .w-\[100px\].flex.justify-start {
+  padding-left: 8px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* Updated padding for wider format controls */
+.w-\[120px\].flex.justify-start {
   padding-left: 8px;
   justify-content: flex-start;
   align-items: flex-start;
@@ -188,7 +279,8 @@ body, html, #root, #__next,
   padding: 0.75rem;
   font-family: monospace;
   font-size: 0.875rem;
-  overflow-x: auto;
+  overflow-wrap: break-word;
+  word-break: break-all;
   transition: background-color 0.3s ease;
   width: 100%;
 }
