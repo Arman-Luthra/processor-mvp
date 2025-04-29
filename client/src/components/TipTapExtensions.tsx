@@ -280,6 +280,24 @@ const RawHtmlSupport = Node.create({
   },
 });
 
+const CustomSuperscript = Superscript.extend({
+  addOptions() {
+    return {
+      ...this.parent?.(),
+      excludes: 'subscript',
+    };
+  },
+});
+
+const CustomSubscript = Subscript.extend({
+  addOptions() {
+    return {
+      ...this.parent?.(),
+      excludes: 'superscript',
+    };
+  },
+});
+
 // Export all extensions TipTap needs
 export const TipTapExtensions = [
   StarterKit.configure({
@@ -310,8 +328,8 @@ export const TipTapExtensions = [
       class: "text-[#2E75CC] underline",
     },
   }),
-  Superscript,
-  Subscript,
+  CustomSuperscript,
+  CustomSubscript,
   CodeBlock.configure({
     HTMLAttributes: {
       class: "code-block font-mono bg-[#F7F6F3] p-3 rounded-md",
