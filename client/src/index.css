@@ -112,7 +112,10 @@
 }
 
 /* Simple hover effect strictly limited to editor content */
-.editor-content:hover:not(:has(.ProseMirror:focus)) {
+.active .editor-content:hover {
+  background-color: transparent !important;
+}
+.editor-content:hover {
   background-color: rgba(59, 130, 246, 0.05) !important;
 }
 

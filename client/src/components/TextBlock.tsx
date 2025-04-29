@@ -36,6 +36,7 @@ export default function TextBlock({
   const [selectedText, setSelectedText] = useState("");
   const formatMenuButtonRef = useRef<HTMLDivElement>(null);
   const isProcessingCommand = useRef(false);
+  const [isActive, setIsActive] = useState(false);
 
   // Initialize dnd-kit sortable
   const {
@@ -104,7 +105,9 @@ export default function TextBlock({
         setSelectedText(selectedContent);
         setShowSelectionMenu(true);
       }
-    }
+    },
+    onFocus: () => setIsActive(true),
+    onBlur: () => setIsActive(false),
   });
 
   // Update editor when block type changes
@@ -584,7 +587,7 @@ export default function TextBlock({
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative group w-full flex ${isFirstBlock ? 'first-block' : ''} ${block.type}`}
+      className={`relative group w-full flex ${isFirstBlock ? 'first-block' : ''} ${block.type} ${isActive ? 'active' : ''}`}
       data-block-id={block.id}
       {...attributes}
     >
