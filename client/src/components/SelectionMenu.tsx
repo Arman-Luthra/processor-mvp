@@ -156,18 +156,20 @@ export default function SelectionMenu({
             <StrikethroughIcon size={16} />
           </button>
           <button
-            className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]"
-            title="Subscript"
-            onClick={() => applyFormatting("subscript")}
-          >
-            <Subscript size={16} />
-          </button>
-          <button
-            className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]"
-            title="Superscript"
+            className={editor.isActive('superscript') ? 'is-active' : 'w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]'}
             onClick={() => applyFormatting("superscript")}
+            aria-label="superscript"
+            type="button"
           >
             <Superscript size={16} />
+          </button>
+          <button
+            className={editor.isActive('subscript') ? 'is-active' : 'w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]'}
+            onClick={() => applyFormatting("subscript")}
+            aria-label="subscript"
+            type="button"
+          >
+            <Subscript size={16} />
           </button>
           <button
             className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#F7F6F3]"
