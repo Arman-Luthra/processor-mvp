@@ -315,7 +315,7 @@ export default function NotionEditor({
             items={blocks.map(block => block.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-3 pl-16">
+            <div className="space-y-3 pl-16 overflow-hidden w-full">
               {blocks.map((block, index) => (
                 <TextBlock
                   key={block.id}
