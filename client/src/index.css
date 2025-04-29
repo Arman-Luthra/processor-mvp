@@ -67,6 +67,29 @@
   cursor: text;
 }
 
+/* Block hover and active state styles */
+.editor-content {
+  position: relative;
+  border-radius: 0.25rem;
+  transition: background-color 0.3s ease;
+}
+
+/* Add blue background on hover */
+.editor-content:hover {
+  background-color: rgba(59, 130, 246, 0.05); /* Very light blue */
+}
+
+/* Add animation when the editor receives focus */
+@keyframes highlight-block {
+  0% { background-color: rgba(59, 130, 246, 0.1); }
+  100% { background-color: transparent; }
+}
+
+.ProseMirror:focus {
+  animation: highlight-block 1s ease forwards;
+  outline: none;
+}
+
 /* Drag and drop styles */
 [data-dnd-draggable] {
   /* Allow translations using CSS variables but prevent scaling */
