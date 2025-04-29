@@ -594,66 +594,80 @@ export default function TextBlock({
 
   const showMenu = isActive || isHovered;
 
+  const getWordCount = () => {
+    if (!editor) return 0;
+    const text = editor.getText().trim();
+    if (!text) return 0;
+    return text.split(/\s+/).filter(Boolean).length;
+  };
+
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`relative group w-full flex ${isFirstBlock ? 'first-block' : ''} ${block.type} ${isActive ? 'active' : ''}`}
-      data-block-id={block.id}
-      {...attributes}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="w-full flex relative">
+    <div className="flex flex-row items-start w-full">
+      <div className="flex-1">
         <div
-          className={`w-[calc(100%-160px)] py-1 focus:outline-none ${getBlockClass(block.type)}`}
-          onKeyDown={handleKeyDown}
+          ref={setNodeRef}
+          style={style}
+          className={`relative group w-full flex ${isFirstBlock ? 'first-block' : ''} ${block.type} ${isActive ? 'active' : ''}`}
           data-block-id={block.id}
-          onClick={() => {
-            if (editor && !editor.isFocused) {
-              editor.commands.focus();
-            }
-          }}
+          {...attributes}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
-          <EditorContent 
-            className="editor-content w-full"
-            editor={editor}
-          />
-        </div>
-        {showMenu && (
-          <div className="w-[160px] flex justify-start items-start pl-2">
-            <div className="flex flex-nowrap items-center justify-start py-1 px-3 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group w-full" ref={formatMenuButtonRef}>
-              <div 
-                className="min-w-[8px] grid grid-rows-3 grid-cols-2 gap-px cursor-grab active:cursor-grabbing drag-handle"
-                {...listeners}
-              >
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="w-1 h-1 rounded-full bg-gray-400"></div>
-                ))}
-              </div>
-              <span className="ml-2 whitespace-nowrap" onClick={(e) => {
-                e.stopPropagation();
-                toggleFormatMenu();
-              }}>{getBlockTypeName(block.type)}</span>
+          <div className="w-full flex relative">
+            <div
+              className={`w-[calc(100%-160px)] py-1 focus:outline-none ${getBlockClass(block.type)}`}
+              onKeyDown={handleKeyDown}
+              data-block-id={block.id}
+              onClick={() => {
+                if (editor && !editor.isFocused) {
+                  editor.commands.focus();
+                }
+              }}
+            >
+              <EditorContent 
+                className="editor-content w-full"
+                editor={editor}
+              />
             </div>
+            {showMenu && (
+              <div className="w-[160px] flex flex-col justify-start items-start pl-2">
+                <div className="flex flex-nowrap items-center justify-start py-1 px-3 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group w-full" ref={formatMenuButtonRef}>
+                  <div 
+                    className="min-w-[8px] grid grid-rows-3 grid-cols-2 gap-px cursor-grab active:cursor-grabbing drag-handle"
+                    {...listeners}
+                  >
+                    {[...Array(6)].map((_, i) => (
+                      <div key={i} className="w-1 h-1 rounded-full bg-gray-400"></div>
+                    ))}
+                  </div>
+                  <span className="ml-2 whitespace-nowrap" onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFormatMenu();
+                  }}>{getBlockTypeName(block.type)}</span>
+                </div>
+                <div className="flex items-center justify-start w-full text-xs text-gray-400 select-none px-3 pb-1">
+                  {getWordCount()} word{getWordCount() !== 1 ? 's' : ''}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+          {showMenu && showFormatMenu && (
+            <FormatDropdown
+              onSelect={handleFormatSelect}
+              onClose={() => setShowFormatMenu(false)}
+              buttonRef={formatMenuButtonRef}
+            />
+          )}
+          {showSelectionMenu && editor && (
+            <SelectionMenu
+              editor={editor}
+              position={selectionPosition}
+              onClose={() => setShowSelectionMenu(false)}
+              selectedText={selectedText}
+            />
+          )}
+        </div>
       </div>
-      {showMenu && showFormatMenu && (
-        <FormatDropdown
-          onSelect={handleFormatSelect}
-          onClose={() => setShowFormatMenu(false)}
-          buttonRef={formatMenuButtonRef}
-        />
-      )}
-      {showSelectionMenu && editor && (
-        <SelectionMenu
-          editor={editor}
-          position={selectionPosition}
-          onClose={() => setShowSelectionMenu(false)}
-          selectedText={selectedText}
-        />
-      )}
     </div>
   );
 }
