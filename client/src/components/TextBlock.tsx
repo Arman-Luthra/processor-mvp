@@ -96,7 +96,7 @@ export default function TextBlock({
         setSelectedText(selectedContent);
         setShowSelectionMenu(true);
       }
-    },
+    }
   });
 
   // Update editor when block type changes
@@ -116,7 +116,7 @@ export default function TextBlock({
   // Register block reference with parent
   useEffect(() => {
     if (registerBlockRef) {
-      registerBlockRef(block.id, setNodeRef);
+      registerBlockRef(block.id, setNodeRef as unknown as HTMLElement);
       return () => registerBlockRef(block.id, null);
     }
   }, [block.id, registerBlockRef, setNodeRef]);

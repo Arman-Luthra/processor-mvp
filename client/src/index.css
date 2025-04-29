@@ -65,6 +65,13 @@
   padding: 4px 0;
   width: 100%;
   cursor: text;
+  white-space: pre-wrap; /* Ensure line breaks work properly */
+}
+
+/* Make sure paragraphs have proper spacing */
+.ProseMirror p {
+  margin: 0;
+  min-height: 1.5em;
 }
 
 /* Block hover and active state styles */
@@ -88,6 +95,11 @@
 .ProseMirror:focus {
   animation: highlight-block 1s ease forwards;
   outline: none;
+}
+
+/* Make sure the animation layer doesn't interfere with editing */
+.ProseMirror:focus::after {
+  pointer-events: none;
 }
 
 /* Drag and drop styles */
