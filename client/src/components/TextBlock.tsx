@@ -6,6 +6,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import { TipTapExtensions } from "@/components/TipTapExtensions";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useActiveBlock } from './ActiveBlockContext';
 
 interface TextBlockProps {
   block: Block;
@@ -37,6 +38,8 @@ export default function TextBlock({
   const formatMenuButtonRef = useRef<HTMLDivElement>(null);
   const isProcessingCommand = useRef(false);
   const [isActive, setIsActive] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const { activeBlockId, setActiveBlockId } = useActiveBlock();
 
   // Initialize dnd-kit sortable
   const {
@@ -106,8 +109,14 @@ export default function TextBlock({
         setShowSelectionMenu(true);
       }
     },
-    onFocus: () => setIsActive(true),
-    onBlur: () => setIsActive(false),
+    onFocus: () => {
+      setIsActive(true);
+      setActiveBlockId(block.id);
+    },
+    onBlur: () => {
+      setIsActive(false);
+      setActiveBlockId(null);
+    },
   });
 
   // Update editor when block type changes
@@ -583,6 +592,8 @@ export default function TextBlock({
     };
   }, [editor, showFormatMenu]);
 
+  const showMenu = isActive || isHovered;
+
   return (
     <div
       ref={setNodeRef}
@@ -590,10 +601,10 @@ export default function TextBlock({
       className={`relative group w-full flex ${isFirstBlock ? 'first-block' : ''} ${block.type} ${isActive ? 'active' : ''}`}
       data-block-id={block.id}
       {...attributes}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Container for both content and format controls with fixed width */}
       <div className="w-full flex relative">
-        {/* Editable content area with explicit width and its own click handler */}
         <div
           className={`w-[calc(100%-160px)] py-1 focus:outline-none ${getBlockClass(block.type)}`}
           onKeyDown={handleKeyDown}
@@ -609,39 +620,32 @@ export default function TextBlock({
             editor={editor}
           />
         </div>
-
-        {/* Format and drag control - fixed position and width */}
-        <div className="w-[160px] flex justify-start items-start pl-2">
-          <div className="flex flex-nowrap items-center justify-start py-1 px-3 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group w-full" ref={formatMenuButtonRef}>
-            {/* Drag handle (2x3 dots) */}
-            <div 
-              className="min-w-[8px] grid grid-rows-3 grid-cols-2 gap-px cursor-grab active:cursor-grabbing drag-handle"
-              {...listeners}
-            >
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="w-1 h-1 rounded-full bg-gray-400"></div>
-              ))}
+        {showMenu && (
+          <div className="w-[160px] flex justify-start items-start pl-2">
+            <div className="flex flex-nowrap items-center justify-start py-1 px-3 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group w-full" ref={formatMenuButtonRef}>
+              <div 
+                className="min-w-[8px] grid grid-rows-3 grid-cols-2 gap-px cursor-grab active:cursor-grabbing drag-handle"
+                {...listeners}
+              >
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="w-1 h-1 rounded-full bg-gray-400"></div>
+                ))}
+              </div>
+              <span className="ml-2 whitespace-nowrap" onClick={(e) => {
+                e.stopPropagation();
+                toggleFormatMenu();
+              }}>{getBlockTypeName(block.type)}</span>
             </div>
-            
-            {/* Format name */}
-            <span className="ml-2 whitespace-nowrap" onClick={(e) => {
-              e.stopPropagation();
-              toggleFormatMenu();
-            }}>{getBlockTypeName(block.type)}</span>
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Format dropdown menu */}
-      {showFormatMenu && (
+      {showMenu && showFormatMenu && (
         <FormatDropdown
           onSelect={handleFormatSelect}
           onClose={() => setShowFormatMenu(false)}
           buttonRef={formatMenuButtonRef}
         />
       )}
-
-      {/* Selection menu */}
       {showSelectionMenu && editor && (
         <SelectionMenu
           editor={editor}

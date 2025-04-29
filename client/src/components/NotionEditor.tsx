@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 import { Block } from "@shared/schema";
 import { DndContext, DragEndEvent, DragStartEvent, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { ActiveBlockProvider } from './ActiveBlockContext';
 
 interface NotionEditorProps {
   initialTitle: string;
@@ -308,76 +309,78 @@ export default function NotionEditor({
   }, []);
 
   return (
-    <div className="min-h-screen flex justify-center">
-      <div className="w-full max-w-[740px] px-4 py-10 md:py-20">
-        {/* Document title */}
-        <div className="mb-10 pl-16">
-          <DocumentTitle 
-            title={title} 
-            onChange={handleTitleChange} 
-            inputRef={titleRef as React.RefObject<HTMLDivElement>} 
-          />
-        </div>
+    <ActiveBlockProvider>
+      <div className="min-h-screen flex justify-center">
+        <div className="w-full max-w-[740px] px-4 py-10 md:py-20">
+          {/* Document title */}
+          <div className="mb-10 pl-16">
+            <DocumentTitle 
+              title={title} 
+              onChange={handleTitleChange} 
+              inputRef={titleRef as React.RefObject<HTMLDivElement>} 
+            />
+          </div>
 
-        {/* Text blocks - Wrapped in DndContext */}
-        <DndContext 
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext 
-            items={blocks.map(block => block.id)}
-            strategy={verticalListSortingStrategy}
+          {/* Text blocks - Wrapped in DndContext */}
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
           >
-            <div className="space-y-3 pl-16 overflow-hidden w-full">
-              {blocks.map((block, index) => (
-                <TextBlock
-                  key={block.id}
-                  block={block}
-                  updateBlock={updateBlock}
-                  addBlockAfter={addBlockAfter}
-                  deleteBlock={deleteBlock}
-                  registerBlockRef={registerBlockRef}
-                  shouldFocus={block.id === lastCreatedBlockId}
-                  isFirstBlock={index === 0}
-                  isLastBlock={index === blocks.length - 1}
-                  isDragging={activeId === block.id}
-                />
-              ))}
-              
-              {/* Add block button at the end */}
-              <div 
-                className="flex items-center cursor-pointer opacity-30 hover:opacity-100 transition-opacity my-2"
-                onClick={() => {
-                  // Add a new paragraph block at the end
-                  const lastBlockId = blocks.length > 0 ? blocks[blocks.length - 1].id : null;
-                  if (lastBlockId) {
-                    addBlockAfter(lastBlockId, 'paragraph');
-                  } else {
-                    // If no blocks, create the first one
-                    const newBlockId = nanoid();
-                    setBlocks([{
-                      id: newBlockId,
-                      type: "paragraph",
-                      content: "<p></p>",
-                    }]);
-                    setLastCreatedBlockId(newBlockId);
-                  }
-                }}
-              >
-                <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center text-gray-500 hover:bg-gray-100">+</div>
-                <span className="ml-2 text-sm text-gray-500">Add a block</span>
+            <SortableContext 
+              items={blocks.map(block => block.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3 pl-16 overflow-hidden w-full">
+                {blocks.map((block, index) => (
+                  <TextBlock
+                    key={block.id}
+                    block={block}
+                    updateBlock={updateBlock}
+                    addBlockAfter={addBlockAfter}
+                    deleteBlock={deleteBlock}
+                    registerBlockRef={registerBlockRef}
+                    shouldFocus={block.id === lastCreatedBlockId}
+                    isFirstBlock={index === 0}
+                    isLastBlock={index === blocks.length - 1}
+                    isDragging={activeId === block.id}
+                  />
+                ))}
+                
+                {/* Add block button at the end */}
+                <div 
+                  className="flex items-center cursor-pointer opacity-30 hover:opacity-100 transition-opacity my-2"
+                  onClick={() => {
+                    // Add a new paragraph block at the end
+                    const lastBlockId = blocks.length > 0 ? blocks[blocks.length - 1].id : null;
+                    if (lastBlockId) {
+                      addBlockAfter(lastBlockId, 'paragraph');
+                    } else {
+                      // If no blocks, create the first one
+                      const newBlockId = nanoid();
+                      setBlocks([{
+                        id: newBlockId,
+                        type: "paragraph",
+                        content: "<p></p>",
+                      }]);
+                      setLastCreatedBlockId(newBlockId);
+                    }
+                  }}
+                >
+                  <div className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center text-gray-500 hover:bg-gray-100">+</div>
+                  <span className="ml-2 text-sm text-gray-500">Add a block</span>
+                </div>
               </div>
-            </div>
-          </SortableContext>
-        </DndContext>
+            </SortableContext>
+          </DndContext>
 
-        {/* Autosave indicator */}
-        <div className="fixed bottom-4 right-4 text-sm text-gray-500">
-          {isSaving ? "Saving..." : "All changes saved"}
+          {/* Autosave indicator */}
+          <div className="fixed bottom-4 right-4 text-sm text-gray-500">
+            {isSaving ? "Saving..." : "All changes saved"}
+          </div>
         </div>
       </div>
-    </div>
+    </ActiveBlockProvider>
   );
 }
