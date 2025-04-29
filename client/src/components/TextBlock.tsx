@@ -592,7 +592,7 @@ export default function TextBlock({
       <div className="w-full flex relative">
         {/* Editable content area with explicit width and its own click handler */}
         <div
-          className={`w-[calc(100%-100px)] py-1 focus:outline-none ${getBlockClass(block.type)}`}
+          className={`w-[calc(100%-160px)] py-1 focus:outline-none ${getBlockClass(block.type)}`}
           onKeyDown={handleKeyDown}
           data-block-id={block.id}
           onClick={() => {
@@ -608,11 +608,11 @@ export default function TextBlock({
         </div>
 
         {/* Format and drag control - fixed position and width */}
-        <div className="w-[100px] flex justify-start items-start pl-2">
-          <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group" ref={formatMenuButtonRef}>
+        <div className="w-[160px] flex justify-start items-start pl-2">
+          <div className="flex flex-nowrap items-center justify-start py-1 px-3 rounded hover:bg-gray-100 cursor-pointer text-gray-500 text-sm group w-full" ref={formatMenuButtonRef}>
             {/* Drag handle (2x3 dots) */}
             <div 
-              className="mr-2 grid grid-rows-3 grid-cols-2 gap-0.5 cursor-grab active:cursor-grabbing drag-handle"
+              className="min-w-[8px] grid grid-rows-3 grid-cols-2 gap-px cursor-grab active:cursor-grabbing drag-handle"
               {...listeners}
             >
               {[...Array(6)].map((_, i) => (
@@ -621,7 +621,7 @@ export default function TextBlock({
             </div>
             
             {/* Format name */}
-            <span onClick={(e) => {
+            <span className="ml-2 whitespace-nowrap" onClick={(e) => {
               e.stopPropagation();
               toggleFormatMenu();
             }}>{getBlockTypeName(block.type)}</span>
